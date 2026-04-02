@@ -4,7 +4,8 @@
   "category": "backend",
   "activation_patterns": {
     "explicit_triggers": ["python", "fastapi", "async", "pydantic", "backend development", "python optimization", "async programming", "python ecosystem"],
-    "context_triggers": ["developing Python applications", "implementing FastAPI services", "optimizing async code", "managing Python dependencies", "Python performance tuning"]
+    "context_triggers": ["developing Python applications", "implementing FastAPI services", "optimizing async code", "managing Python dependencies", "Python performance tuning"],
+    "activation_keywords": ["python", "fastapi", "async", "pydantic", "backend"]
   },
   "instructions": [
     "Use Python 3.10+ features: type hints, structural pattern matching, modern stdlib",

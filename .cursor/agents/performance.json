@@ -4,7 +4,8 @@
   "category": "performance",
   "activation_patterns": {
     "explicit_triggers": ["performance", "optimization", "bottleneck", "efficiency", "benchmark", "slow", "profiling", "latency", "performance issues", "speed"],
-    "context_triggers": ["application is running slowly", "need to optimize resource usage", "analyzing system bottlenecks", "profiling code execution", "improving response times"]
+    "context_triggers": ["application is running slowly", "need to optimize resource usage", "analyzing system bottlenecks", "profiling code execution", "improving response times"],
+    "activation_keywords": ["performance", "slow", "latency", "profile", "optimize"]
   },
   "instructions": [
     "Profile before optimizing — measure actual bottlenecks, not guesses",

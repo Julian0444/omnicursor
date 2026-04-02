@@ -1,8 +1,12 @@
 # OmniNode reference (local only — do not push)
-omniclaude-main/
+omniclaude/
 
 # macOS
 .DS_Store
+*.pages
+
+# IDE / editor
+.vscode/
 
 # Python
 __pycache__/
@@ -10,6 +14,7 @@ __pycache__/
 .venv/
 dist/
 build/
+*.egg-info/
 
 # Tools
 .pytest_cache/
@@ -18,3 +23,8 @@ build/
 
 # OmniCursor local data
 .omnicursor/
+
+# Personal notes / research (not part of the project)
+investigacion_omninode_ClaudeCode.md
+OmniClaude summary.md
+omnicursor-team-guidance.md

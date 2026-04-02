@@ -4,7 +4,8 @@
   "category": "exploration",
   "activation_patterns": {
     "explicit_triggers": ["crawl repository", "index codebase", "analyze repository structure", "repository analysis", "codebase intelligence", "repository crawling", "map codebase", "explore repo"],
-    "context_triggers": ["new repository setup", "comprehensive knowledge extraction needed", "repository structure analysis required", "documentation indexing needed", "codebase overview"]
+    "context_triggers": ["new repository setup", "comprehensive knowledge extraction needed", "repository structure analysis required", "documentation indexing needed", "codebase overview"],
+    "activation_keywords": ["crawl", "explore", "codebase", "repository", "index"]
   },
   "instructions": [
     "Start with top-level structure: README, config files, directory layout",

@@ -1,29 +1,48 @@
 # OmniCursor Execution Plan
 
-## Current Slice
+> **Status**: This plan has been fully executed. All tasks below are complete. This file is preserved as a historical record of the build order.
 
-This first vertical slice delivers:
+## Completed Phases
 
-- repo-root Cursor rules preserved and reusable
-- a minimal MCP server
-- `get_agent_context`
-- `invoke_skill`
-- the first real local skill: `systematic-debugging`
-- the first MCP-aware rule: `10-systematic-debugging`
+### Phase 1 — MCP Skeleton (complete)
 
-## Build Order
+1. Preserved and rooted the starter-kit rules, docs, prompts, and rubrics
+2. Added the MCP package skeleton under `src/omnicursor/`
+3. Implemented routing context (`agents.py`) and skill loading (`skills.py`)
+4. Added the debugging skill and its rule (`10-systematic-debugging.mdc`)
+5. Verified basic imports, tests, and run docs
 
-1. Preserve and root the starter-kit rules, docs, prompts, and rubrics
-2. Add the MCP package skeleton under `src/omnicursor/`
-3. Implement routing context and skill loading
-4. Add the debugging skill and its rule
-5. Verify basic imports, tests, and run docs
+### Phase 2 — MCP Tools (complete)
 
-## Next Tasks
+1. Added `check_compliance` as a real MCP tool with keyword-based registry
+2. Added `patterns.py` as a static pattern catalog for preserved rules
+3. Ported brainstorming, writing-plans, plan-ticket, and adapter-stub as `skills/*.md`
+4. Added 16 agent JSON configs in `.cursor/agents/`
 
-1. Add `check_compliance` as the next real MCP tool
-2. Add a small pattern storage path behind `patterns.py`
-3. Port the preserved brainstorming, writing-plans, and plan-ticket behavior into reusable `skills/*.md`
-4. Decide whether the preserved starter-kit docs should be rewritten or versioned as "legacy starter-pack" docs
-5. Add a demo-oriented Cursor MCP config example after the local Python baseline is settled
+### Phase 3A — Hooks Infrastructure (complete)
 
+1. Created `.cursor/hooks.json` with 4 lifecycle hooks
+2. Created `on_prompt.py` — three-strategy scoring (exact/fuzzy/keyword), pattern injection, `systemMessage` enrichment
+3. Created `on_shell.py` — two-tier command guard (9 HARD_BLOCK + 11 SOFT_WARN patterns)
+4. Created `on_edit.py` — diagnostic `ruff check` on Python edits
+5. Created `on_stop.py` — session aggregation with 4-gate outcome classification (failed/success/abandoned/unknown)
+6. Created `_common.py` — shared paths, stdin/stdout helpers, event logging, agent config loading
+7. Created `pattern_loader.py` — thread-safe in-memory pattern cache loading from `~/.omnicursor/learned_patterns.json`
+8. Added `activation_keywords` to all 16 agent JSON configs
+9. Upgraded `agents.py` to three-strategy scoring with `HARD_FLOOR = 0.55`, `match_agent_candidates()`, backward-compatible `match_agent()`
+10. Ported 8 methodology skills from OmniClaude: pr-review, pr-polish, hostile-reviewer, defense-in-depth, merge-planner, insights-to-plan, handoff, using-git-worktrees
+11. Added compliance registry entries for all 13 skills
+
+### Final Verification (complete)
+
+- 122 tests passing
+- `ruff check` clean across `src/`, `tests/`, `.cursor/hooks/`
+- All hook smoke tests pass
+- MCP server imports cleanly
+
+## What Remains (not yet started)
+
+- `store_pattern` MCP tool — enables writing new patterns from sessions
+- Seed `~/.omnicursor/learned_patterns.json` — starter patterns for demo
+- Valkey/PostgreSQL integration — future performance upgrade, not needed for MVP
+- `beforeMCPExecution` / `beforeReadFile` hooks — deferred (Phase 3B)

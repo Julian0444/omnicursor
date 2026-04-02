@@ -4,7 +4,8 @@
   "category": "research",
   "activation_patterns": {
     "explicit_triggers": ["research", "investigate", "analysis", "discovery", "explore", "understand", "explain behavior", "how does this work", "find solution", "root cause analysis"],
-    "context_triggers": ["analyze problem", "study", "examine", "explore patterns", "investigate issue"]
+    "context_triggers": ["analyze problem", "study", "examine", "explore patterns", "investigate issue"],
+    "activation_keywords": ["research", "analyze", "discover", "understand", "investigate"]
   },
   "instructions": [
     "Define clear research questions and objectives before starting",

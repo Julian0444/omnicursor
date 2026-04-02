@@ -4,7 +4,8 @@
   "category": "quality",
   "activation_patterns": {
     "explicit_triggers": ["code quality", "quality analysis", "compliance", "anti-patterns", "code review", "quality assessment", "code standards", "code smells"],
-    "context_triggers": ["analyzing code quality metrics", "checking architectural compliance", "identifying code smells", "validating best practices", "generating quality reports"]
+    "context_triggers": ["analyzing code quality metrics", "checking architectural compliance", "identifying code smells", "validating best practices", "generating quality reports"],
+    "activation_keywords": ["quality", "complexity", "maintainability", "smells", "standards"]
   },
   "instructions": [
     "Assess code readability, complexity, and maintainability with specific metrics",

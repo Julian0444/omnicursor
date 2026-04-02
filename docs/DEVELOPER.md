@@ -7,43 +7,68 @@ These existing files were reviewed and intentionally preserved as the architectu
 - [`.cursor/rules/00-omninode-concepts.mdc`](../.cursor/rules/00-omninode-concepts.mdc): always-on vocabulary, pipeline stages, bucket boundaries
 - [`.cursor/rules/01-codebase-research.mdc`](../.cursor/rules/01-codebase-research.mdc): bounded file-research guard
 - [`.cursor/rules/10-brainstorming.mdc`](../.cursor/rules/10-brainstorming.mdc): idea-to-design methodology
+- [`.cursor/rules/10-systematic-debugging.mdc`](../.cursor/rules/10-systematic-debugging.mdc): structured debugging methodology
 - [`.cursor/rules/11-writing-plans.mdc`](../.cursor/rules/11-writing-plans.mdc): design-to-plan methodology
 - [`.cursor/rules/12-plan-ticket.mdc`](../.cursor/rules/12-plan-ticket.mdc): bounded repo detection and YAML ticket template generation
 - [`.cursor/rules/20-adapter-stub.mdc`](../.cursor/rules/20-adapter-stub.mdc): Bucket 3 dry-run and fail-soft pattern
-- [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md): frozen adapter contract and bucket rules
-- [`docs/STUDENT_GUIDE.md`](./STUDENT_GUIDE.md): execution and grading flow
-- [`docs/SKILL_TRANSLATION_TEMPLATE.md`](./SKILL_TRANSLATION_TEMPLATE.md): rule-porting template
+- [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md): frozen adapter contract and bucket rules (starter-pack artifact)
+- [`docs/STUDENT_GUIDE.md`](./STUDENT_GUIDE.md): capstone execution and grading flow (starter-pack artifact)
+- [`docs/SKILL_TRANSLATION_TEMPLATE.md`](./SKILL_TRANSLATION_TEMPLATE.md): rule-porting template (starter-pack artifact)
 - [`tests/prompts`](../tests/prompts): prompt fixtures for rule behavior
 - [`tests/rubrics`](../tests/rubrics): pass/fail criteria for the preserved rules
-- [`HOW_TO_RUN_IN_CURSOR.md`](../HOW_TO_RUN_IN_CURSOR.md): original starter-pack setup instructions
+- [`docs/HOW_TO_RUN_IN_CURSOR.md`](./HOW_TO_RUN_IN_CURSOR.md): original starter-pack setup instructions (historical — see note below)
 - [`OMNICLAUDE_SKILLS.md`](../OMNICLAUDE_SKILLS.md): skill inventory to mine for future ports
-- [`OmniCursor_Architecture_Visual_Guide55.pages`](../OmniCursor_Architecture_Visual_Guide55.pages): visual blueprint for the repo direction
 
-## Architectural Mapping
+## Three-Layer Architecture
 
-The preserved rules stay as the top-level behavior layer inside Cursor.
-The new MCP backend adds structured services underneath them:
+OmniCursor extends the starter kit with two additional layers:
 
-- Routing remains rule-driven and is approximated through self-classification plus `get_agent_context`
-- Skill loading is handled by `invoke_skill`
-- Compliance and pattern storage are left as placeholders so the package shape matches the architecture without pretending those features are done
+### Layer 1: Cursor Rules (preserved)
 
-This means OmniCursor extends the existing starter kit instead of bypassing it.
+The preserved rules stay as the top-level behavior layer inside Cursor. Rules `00`/`01` are always-on; `10`-`20` activate on keyword match.
 
-## New Python Modules
+### Layer 2: Cursor Hooks (`.cursor/hooks/`)
 
-- [`src/omnicursor/server.py`](../src/omnicursor/server.py): FastMCP server and tool registration
-- [`src/omnicursor/agents.py`](../src/omnicursor/agents.py): category-to-agent context mapping
-- [`src/omnicursor/skills.py`](../src/omnicursor/skills.py): local Markdown skill loader
-- [`src/omnicursor/schemas.py`](../src/omnicursor/schemas.py): Pydantic response models
-- [`src/omnicursor/compliance.py`](../src/omnicursor/compliance.py): minimal placeholder for the next slice
-- [`src/omnicursor/patterns.py`](../src/omnicursor/patterns.py): preserved-rule pattern registry placeholder
-- [`src/omnicursor/db.py`](../src/omnicursor/db.py): repo paths and in-memory storage placeholder
+4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules. Deterministic Python scripts, stdlib only — no pip dependencies.
+
+| Script | Event | Purpose |
+|--------|-------|---------|
+| `on_prompt.py` | `beforeSubmitPrompt` | Three-strategy agent scoring, pattern injection, emits `{"systemMessage": ...}` (whether Cursor consumes this is a platform uncertainty) |
+| `on_shell.py` | `beforeShellExecution` | Two-tier command guard (9 HARD_BLOCK + 11 SOFT_WARN patterns) |
+| `on_edit.py` | `afterFileEdit` | Diagnostic `ruff check` on `.py` files, event logging |
+| `on_stop.py` | `stop` | Session event aggregation, 4-gate outcome classification |
+| `_common.py` | (shared) | Path constants, stdin/stdout helpers, event logging, agent config loading |
+| `pattern_loader.py` | (library) | Thread-safe in-memory pattern cache, loads from `~/.omnicursor/learned_patterns.json` |
+
+### Layer 3: MCP Tools (`src/omnicursor/`)
+
+FastMCP backend providing structured capabilities that rules can call.
+
+| Module | Purpose |
+|--------|---------|
+| `server.py` | FastMCP server with 3 tools: `get_agent_context`, `invoke_skill`, `check_compliance` |
+| `agents.py` | Agent routing with three-strategy scoring (exact/fuzzy/keyword), `HARD_FLOOR = 0.55`, dynamic JSON loading from `.cursor/agents/*.json`, backward-compatible `get_agent_context(category)` |
+| `skills.py` | Auto-discovers and loads Markdown skills from `skills/` (13 skills) |
+| `compliance.py` | Keyword-based compliance registry with 3–5 checks per skill (13 skills) |
+| `schemas.py` | Pydantic v2 models: `AgentContext`, `SkillDocument`, `ComplianceResult`, `PatternRecord`, `DatabaseStatus` |
+| `patterns.py` | Lists 4 preserved rules as `PatternRecord` objects (static) |
+| `db.py` | Repo paths (`REPO_ROOT`, `SKILLS_DIR`, `RULES_DIR`) and `InMemoryDatabase` placeholder |
+
+## How Agent Routing Works
+
+Routing uses identical three-strategy scoring in both `on_prompt.py` (hooks layer) and `agents.py` (MCP layer):
+
+1. **Exact substring match** on `explicit_triggers` → 0.95, `context_triggers` → 0.80
+2. **Fuzzy match** via `SequenceMatcher` with length-aware thresholds
+3. **Keyword overlap** on `activation_keywords` → scaled 0.55–0.85
+
+`HARD_FLOOR = 0.55` discards weak candidates. No match falls back to `polymorphic-agent` (hooks) or `omnicursor-generalist` (MCP).
+
+Agent definitions are loaded dynamically from `.cursor/agents/*.json` (16 configs). Each config has: `name`, `description`, `category`, `activation_patterns` (with `explicit_triggers`, `context_triggers`, `activation_keywords`), `instructions`, `recommended_skill`.
 
 ## How `get_agent_context` Integrates With Existing Rules
 
-`get_agent_context` is not a second routing system.
-It is a small MCP helper that a rule can call after self-classifying the request.
+`get_agent_context` is not a second routing system. It is a small MCP helper that a rule can call after self-classifying the request.
 
 For example:
 
@@ -53,3 +78,18 @@ For example:
 - the always-on preserved rules still provide vocabulary and bounded research constraints
 
 For non-debug flows, the preserved rules continue to be the primary execution layer.
+
+## Adding New Components
+
+**New agent**: Create `.cursor/agents/<name>.json` with `name`, `description`, `category`, `activation_patterns` (must include `explicit_triggers`, `context_triggers`, `activation_keywords`), `instructions`, `recommended_skill`. It auto-loads on startup.
+
+**New skill**: Create `skills/<name>.md`. Add a compliance registry entry in `compliance.py` with 3–5 keyword checks. Update the expected sets in `tests/test_compliance.py` and `tests/test_skills.py`.
+
+## Historical Starter-Pack Docs
+
+These files are preserved as starter-pack / capstone artifacts. They describe the original assignment scope and may not fully reflect the current implementation:
+
+- `docs/ARCHITECTURE.md` — bucket model and frozen adapter contract (still accurate for its scope)
+- `docs/STUDENT_GUIDE.md` — 6-phase capstone execution plan
+- `docs/SKILL_TRANSLATION_TEMPLATE.md` — rule-porting template
+- `docs/HOW_TO_RUN_IN_CURSOR.md` — original setup instructions (references `cursor-omninode/` folder name and pre-hooks state; see `docs/QUICKSTART.md` for current setup)

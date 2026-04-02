@@ -4,7 +4,8 @@
   "category": "review",
   "activation_patterns": {
     "explicit_triggers": ["pr review", "pull request", "code review", "review code", "merge readiness", "review changes", "assess pr", "quality check", "standards review", "compliance check"],
-    "context_triggers": ["reviewing pull request changes", "assessing code quality", "validating merge readiness", "checking security vulnerabilities", "analyzing performance impact"]
+    "context_triggers": ["reviewing pull request changes", "assessing code quality", "validating merge readiness", "checking security vulnerabilities", "analyzing performance impact"],
+    "activation_keywords": ["review", "merge", "pull", "request", "changes"]
   },
   "instructions": [
     "Analyze all changed files for correctness, style, and potential regressions",

@@ -43,9 +43,23 @@ def test_load_adapter_stub_skill(repository: SkillRepository) -> None:
     assert "Adapter Stub" in skill.content
 
 
-def test_available_skills_lists_all_five(repository: SkillRepository) -> None:
+def test_available_skills_lists_all(repository: SkillRepository) -> None:
     available = repository.available_skills()
-    expected = ["adapter-stub", "brainstorming", "plan-ticket", "systematic-debugging", "writing-plans"]
+    expected = [
+        "adapter-stub",
+        "brainstorming",
+        "defense-in-depth",
+        "handoff",
+        "hostile-reviewer",
+        "insights-to-plan",
+        "merge-planner",
+        "plan-ticket",
+        "pr-polish",
+        "pr-review",
+        "systematic-debugging",
+        "using-git-worktrees",
+        "writing-plans",
+    ]
     assert available == expected
 
 

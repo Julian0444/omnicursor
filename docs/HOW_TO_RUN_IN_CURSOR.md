@@ -1,5 +1,7 @@
 # How to Run in Cursor
 
+> **Historical document.** These are the original starter-pack instructions. The project has since evolved to include hooks, MCP tools, and 13 skills. For current setup instructions, see [`docs/QUICKSTART.md`](./QUICKSTART.md).
+
 Step-by-step instructions for loading and using the OmniNode Cursor starter pack.
 
 ---

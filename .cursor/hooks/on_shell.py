@@ -30,6 +30,7 @@ HARD_BLOCK: List[re.Pattern[str]] = [
         r":\(\)\s*\{\s*:\|:&\s*\}\s*;:",
         r"--no-verify",
         r">\s*/dev/sda",
+        r"base64\s+--decode\s*\|.*\bsh\b",
     ]
 ]
 
@@ -46,6 +47,7 @@ SOFT_WARN: List[Tuple[re.Pattern[str], str]] = [
         (r"\bkill\s+-9\b", "SIGKILL does not allow graceful shutdown"),
         (r"\bchmod\s+777\b", "World-writable permissions are a security risk"),
         (r"\bsudo\s+rm\b", "Elevated removal is risky"),
+        (r"\beval\b", "eval executes arbitrary strings as code"),
     ]
 ]
 

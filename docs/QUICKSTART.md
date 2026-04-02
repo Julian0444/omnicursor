@@ -1,21 +1,20 @@
 # OmniCursor Quickstart
 
-This repository now has two layers:
+OmniCursor has three layers:
 
-1. The preserved Cursor starter kit in [`.cursor/rules`](../.cursor/rules), [`docs`](../docs), and [`tests`](../tests)
-2. The OmniCursor MCP backend in [`src/omnicursor`](../src/omnicursor) and [`skills`](../skills)
+1. **Cursor Rules** (`.cursor/rules/`, 7 `.mdc` files) — behavior surface for routing and interaction
+2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic, stdlib only, no LLM
+3. **MCP Tools** (`src/omnicursor/server.py`, 3 tools) — FastMCP backend for agent routing, skill loading, and compliance checking
 
 ## Prerequisites
 
-- Python 3.10 or newer
+- Python 3.10 or newer (developed on 3.12)
 - A virtual environment for this repo
-
-The official MCP Python SDK currently requires Python 3.10+.
 
 ## Install
 
 ```bash
-python3.10 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 ```
@@ -32,10 +31,11 @@ The default transport is `stdio`, which is the right starting point for a local 
 ## Use in Cursor
 
 1. Open the repository root, not a parent folder.
-2. Confirm the preserved rules under [`.cursor/rules`](../.cursor/rules) are visible in Cursor.
+2. Confirm the 7 rules under `.cursor/rules/` are visible in Cursor Settings.
 3. Register a local MCP server command that runs `omnicursor-server` from this repo's virtual environment.
-4. Use the preserved rules for brainstorming, planning, ticketing, and adapter behavior.
-5. The MCP tools enhance each rule with routing, skill loading, and compliance checking.
+4. Hooks are automatically active via `.cursor/hooks.json` — no extra configuration needed.
+5. Use the rules for brainstorming, planning, ticketing, debugging, and adapter behavior.
+6. The MCP tools enhance each rule with routing, skill loading, and compliance checking.
 
 ## Available MCP Tools
 
@@ -55,13 +55,13 @@ Unrecognized categories fall back to `omnicursor-generalist`.
 
 ### `invoke_skill(skill_name: str)`
 
-Loads a Markdown skill from the `skills/` directory and returns its content.
+Loads a Markdown skill from the `skills/` directory and returns its content. Available skills: `systematic-debugging`, `brainstorming`, `writing-plans`, `plan-ticket`, `adapter-stub`, `pr-review`, `pr-polish`, `hostile-reviewer`, `defense-in-depth`, `merge-planner`, `insights-to-plan`, `handoff`, `using-git-worktrees`.
 
 ### `check_compliance(skill_name: str, response_summary: str)`
 
-Checks whether a model response complies with a skill's expected output pattern. Returns a checklist with pass/fail for each expected element.
+Checks whether a model response complies with a skill's expected output pattern. Returns a checklist with pass/fail for each expected element. All 13 skills have compliance registry entries.
 
-## Available Skills
+## Available Skills (13)
 
 | Skill | File | Purpose |
 |-------|------|---------|
@@ -70,6 +70,14 @@ Checks whether a model response complies with a skill's expected output pattern.
 | `writing-plans` | `skills/writing-plans.md` | Design docs into TDD implementation plans |
 | `plan-ticket` | `skills/plan-ticket.md` | Plans into YAML ticket contract templates |
 | `adapter-stub` | `skills/adapter-stub.md` | Bucket 3 dry-run stubs with fail-soft behavior |
+| `pr-review` | `skills/pr-review.md` | Severity-classified PR review with merge readiness verdict |
+| `pr-polish` | `skills/pr-polish.md` | Three-phase PR refinement to merge-ready state |
+| `hostile-reviewer` | `skills/hostile-reviewer.md` | Adversarial code review with iterative convergence |
+| `defense-in-depth` | `skills/defense-in-depth.md` | Four-layer validation for data-flow bugs |
+| `merge-planner` | `skills/merge-planner.md` | PR classification and priority-ordered merge planning |
+| `insights-to-plan` | `skills/insights-to-plan.md` | Convert analysis findings into prioritized action plans |
+| `handoff` | `skills/handoff.md` | Session continuity through structured context capture |
+| `using-git-worktrees` | `skills/using-git-worktrees.md` | Isolated workspace creation with safety verification |
 
 ## End-to-End Flow in Cursor
 
@@ -107,32 +115,41 @@ Cursor hooks are deterministic Python scripts that fire on editor lifecycle even
 
 ### Active Hooks
 
-**`beforeSubmitPrompt` → `on_prompt.py`** — Classifies each prompt against the 16 agent configs in `.cursor/agents/` using trigger-based scoring (`explicit_triggers` = 2 pts, `context_triggers` = 1 pt). The matched agent and score are logged to `~/.omnicursor/events.jsonl`. This hook is informational only — it cannot modify the prompt.
+**`beforeSubmitPrompt` → `on_prompt.py`** — Classifies each prompt against the 16 agent configs in `.cursor/agents/` using three-strategy scoring: exact substring match (0.95), fuzzy `SequenceMatcher` with length-aware thresholds, and keyword overlap (0.55–0.85). `HARD_FLOOR = 0.55` discards weak matches. Emits `{"systemMessage": "<!-- OmniCursor Agent: <name> (confidence: <score>) -->"}` with the selected agent and any learned patterns from `~/.omnicursor/learned_patterns.json`. Falls back to `polymorphic-agent` with score 0.0 when no agent matches. Whether Cursor actually consumes the `systemMessage` output from `beforeSubmitPrompt` hooks is a platform uncertainty — the hook always emits it regardless.
 
-**`beforeShellExecution` → `on_shell.py`** — Guards against dangerous shell commands using a two-tier regex system. Hard-blocked commands (e.g., `rm -rf /`, `--no-verify`, fork bombs) are denied outright. Risky commands (e.g., `git push --force`, `DROP TABLE`, `curl | sh`) are allowed with a warning injected into the agent context.
+**`beforeShellExecution` → `on_shell.py`** — Guards against dangerous shell commands using a two-tier regex system. 9 hard-blocked patterns (e.g., `rm -rf /`, `--no-verify`, fork bombs, `base64 --decode | sh`) are denied outright. 11 risky patterns (e.g., `git push --force`, `DROP TABLE`, `curl | sh`, `eval`) are allowed with a warning injected into the agent context.
 
-**`afterFileEdit` → `on_edit.py`** — Logs every file edit with language detection and edit count. For Python files, runs `ruff check` (diagnostic only, never `--fix`) and logs any issues to `~/.omnicursor/lint.jsonl`.
+**`afterFileEdit` → `on_edit.py`** — Logs every file edit with language detection and edit count. For Python files, runs `ruff check` (diagnostic only, never `--fix`) and logs any issues.
 
-**`stop` → `on_stop.py`** — Aggregates all events for the ending conversation: prompt classifications, unique files edited, shell command decisions, and languages used. Writes a session summary to `~/.omnicursor/sessions/<conversation_id>.json`.
+**`stop` → `on_stop.py`** — Aggregates all events for the ending conversation: prompt classifications, unique files edited, shell command decisions, and languages used. Classifies the session outcome using a 4-gate decision tree (failed → success → abandoned → unknown). Writes a session summary to `~/.omnicursor/sessions/<conversation_id>.json`.
+
+### Supporting Modules
+
+- **`_common.py`** — Shared path constants (`HOOKS_DIR`, `REPO_ROOT`, `AGENTS_DIR`, `OMNICURSOR_DIR`, `EVENTS_LOG`, `SESSIONS_DIR`, `LEARNED_PATTERNS_FILE`), stdin/stdout JSON helpers, event logging, agent config loading.
+- **`pattern_loader.py`** — Thread-safe in-memory `PatternCache` singleton. Warms from `~/.omnicursor/learned_patterns.json` on first use. Provides `get()` by domain, `is_warm()`, `is_stale()` (10-minute TTL). Used by `on_prompt.py` to inject learned patterns into the `systemMessage`.
 
 ### Verifying Hooks Work
 
+```bash
+# Smoke test on_prompt.py (should show agent + confidence)
+echo '{"prompt": "help me debug this error"}' | python3 .cursor/hooks/on_prompt.py
+
+# Smoke test on_shell.py (should deny)
+echo '{"command": "rm -rf /"}' | python3 .cursor/hooks/on_shell.py
+
+# Smoke test on_stop.py (session outcome)
+echo '{"conversation_id": "test-123", "status": "completed"}' | python3 .cursor/hooks/on_stop.py
+```
+
 - **Event log**: `cat ~/.omnicursor/events.jsonl` — one JSON line per event
 - **Session summaries**: `ls ~/.omnicursor/sessions/` — one file per completed conversation
-- **Cursor UI**: Open Output channels → Hooks to see real-time stdout/stderr from hook scripts
 
 ### Requirements
 
 - Python 3.10+ (same as the MCP server)
 - `ruff` (optional) — if installed, `on_edit.py` runs diagnostic linting on Python files
 
-### Phase 3B Preview
-
-Two additional hooks are planned:
-- `beforeMCPExecution` — intercept and validate MCP tool calls before they execute
-- `beforeReadFile` — control file access patterns and log read operations
-
 ## Notes
 
-- [`HOW_TO_RUN_IN_CURSOR.md`](../HOW_TO_RUN_IN_CURSOR.md) is preserved as the original starter-kit walkthrough.
+- [`docs/HOW_TO_RUN_IN_CURSOR.md`](./HOW_TO_RUN_IN_CURSOR.md) is preserved as the original starter-kit walkthrough.
 - [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) remains the bucket and adapter contract reference.

@@ -62,13 +62,21 @@ def test_unknown_skill_returns_no_registry() -> None:
     assert result.checks == {}
 
 
-def test_all_five_skills_have_registry_entries() -> None:
+def test_all_skills_have_registry_entries() -> None:
     expected = {
         "systematic-debugging",
         "brainstorming",
         "writing-plans",
         "plan-ticket",
         "adapter-stub",
+        "pr-review",
+        "pr-polish",
+        "hostile-reviewer",
+        "defense-in-depth",
+        "merge-planner",
+        "insights-to-plan",
+        "handoff",
+        "using-git-worktrees",
     }
     assert set(COMPLIANCE_REGISTRY.keys()) == expected
 

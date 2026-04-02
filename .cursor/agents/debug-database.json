@@ -4,7 +4,8 @@
   "category": "database",
   "activation_patterns": {
     "explicit_triggers": ["database debug", "query optimization", "sql performance", "database troubleshoot", "db connection issue", "database error", "query analysis", "database performance"],
-    "context_triggers": ["database queries running slowly", "connection timeout errors", "database performance degradation", "SQL query optimization needed", "database logging issues"]
+    "context_triggers": ["database queries running slowly", "connection timeout errors", "database performance degradation", "SQL query optimization needed", "database logging issues"],
+    "activation_keywords": ["database", "query", "sql", "schema", "index"]
   },
   "instructions": [
     "Analyze query execution plans to identify performance bottlenecks",

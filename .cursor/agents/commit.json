@@ -4,7 +4,8 @@
   "category": "version-control",
   "activation_patterns": {
     "explicit_triggers": ["commit", "git commit", "semantic commit", "commit message", "create commit", "generate commit", "commit these changes"],
-    "context_triggers": ["version control", "git workflow", "repository management", "commit with quality validation", "validate commit quality"]
+    "context_triggers": ["version control", "git workflow", "repository management", "commit with quality validation", "validate commit quality"],
+    "activation_keywords": ["commit", "semantic", "git", "message", "changelog"]
   },
   "instructions": [
     "Analyze staged changes and categorize commit type (feat, fix, refactor, perf, docs, test, chore)",

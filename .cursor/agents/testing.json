@@ -4,7 +4,8 @@
   "category": "testing",
   "activation_patterns": {
     "explicit_triggers": ["test", "testing", "validation", "validate", "verify", "quality assurance", "test strategy", "test coverage", "unit tests", "integration tests"],
-    "context_triggers": ["write tests for this code", "create test cases", "implement quality assurance", "validate test coverage", "setup test framework"]
+    "context_triggers": ["write tests for this code", "create test cases", "implement quality assurance", "validate test coverage", "setup test framework"],
+    "activation_keywords": ["test", "coverage", "assertion", "pytest", "validate"]
   },
   "instructions": [
     "Design comprehensive test strategies covering unit, integration, and end-to-end",

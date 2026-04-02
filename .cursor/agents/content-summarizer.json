@@ -4,7 +4,8 @@
   "category": "summarization",
   "activation_patterns": {
     "explicit_triggers": ["summarize", "summarize content", "reduce text", "condense", "extract key information", "summarize log", "make summary", "content summarization"],
-    "context_triggers": ["large text content needs reduction", "log analysis required", "API response too large to process", "documentation needs condensing", "error log pattern extraction needed"]
+    "context_triggers": ["large text content needs reduction", "log analysis required", "API response too large to process", "documentation needs condensing", "error log pattern extraction needed"],
+    "activation_keywords": ["summarize", "condense", "extract", "reduce", "summary"]
   },
   "instructions": [
     "Choose the right strategy: truncation for simple cases, extraction for structured data",

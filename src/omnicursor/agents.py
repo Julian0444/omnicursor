@@ -3,10 +3,28 @@
 from __future__ import annotations
 
 import json
+import re
+from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from .schemas import AgentContext
+
+
+# ---------------------------------------------------------------------------
+# Routing constants
+# ---------------------------------------------------------------------------
+
+# Below this score an agent is not considered a candidate.
+# Mirrors omniclaude HARD_FLOOR (agent_router.py).
+HARD_FLOOR: float = 0.55
+
+# Common stopwords filtered out during keyword extraction.
+_STOPWORDS = frozenset({
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from",
+    "has", "have", "i", "in", "is", "it", "my", "not", "of", "on",
+    "or", "the", "this", "that", "to", "was", "we", "with", "you",
+})
 
 
 # ---------------------------------------------------------------------------
@@ -239,47 +257,135 @@ def get_agent_context(category: str) -> AgentContext:
 # ---------------------------------------------------------------------------
 
 
-def _score_agent(prompt_lower: str, agent: Dict[str, Any]) -> float:
-    """Score a single agent config against the lowered prompt."""
+def _extract_keywords(text: str) -> List[str]:
+    """Extract meaningful keywords from *text*, filtering stopwords."""
+    return [
+        w for w in re.findall(r"\b\w+\b", text.lower())
+        if w not in _STOPWORDS and len(w) > 2
+    ]
+
+
+def _fuzzy_threshold(trigger: str) -> float:
+    """Dynamic threshold: shorter triggers need higher similarity."""
+    n = len(trigger)
+    if n <= 6:
+        return 0.85
+    elif n <= 10:
+        return 0.78
+    return 0.72
+
+
+def _score_agent(
+    prompt_lower: str,
+    prompt_words: set,
+    agent: Dict[str, Any],
+) -> Tuple[float, str]:
+    """Multi-strategy scoring for a single agent config.
+
+    Strategies (evaluated in order, best score wins):
+      1. Exact substring match on explicit_triggers → 0.95
+      2. Fuzzy SequenceMatcher on explicit_triggers → scaled by ratio
+      3. Keyword overlap on activation_keywords (or auto-extracted) → 0.55-0.85
+
+    Returns ``(score, reason)``.  Score 0.0 means no match.
+    """
     activation = agent.get("activation_patterns", {})
     explicit: List[str] = activation.get("explicit_triggers", [])
     context: List[str] = activation.get("context_triggers", [])
 
-    max_points = 2 * len(explicit) + len(context)
-    if max_points == 0:
-        return 0.0
+    best_score = 0.0
+    best_reason = ""
 
-    points = 0
+    # --- Strategy 1: exact substring match (highest confidence) ---
     for trigger in explicit:
         if trigger.lower() in prompt_lower:
-            points += 2
+            if 0.95 > best_score:
+                best_score = 0.95
+                best_reason = "Exact trigger: '{}'".format(trigger)
+
     for trigger in context:
         if trigger.lower() in prompt_lower:
-            points += 1
+            score = 0.80
+            if score > best_score:
+                best_score = score
+                best_reason = "Context trigger: '{}'".format(trigger)
 
-    return points / max_points
+    # --- Strategy 2: fuzzy matching via SequenceMatcher ---
+    if best_score < 0.90:
+        words_in_prompt = re.findall(r"\b\w+\b", prompt_lower)
+        for trigger in explicit:
+            trigger_lower = trigger.lower()
+            threshold = _fuzzy_threshold(trigger_lower)
+            for word in words_in_prompt:
+                ratio = SequenceMatcher(None, trigger_lower, word).ratio()
+                if ratio >= threshold and ratio > best_score:
+                    best_score = ratio
+                    best_reason = "Fuzzy match: '{}' ({:.0%})".format(trigger, ratio)
+
+    # --- Strategy 3: keyword overlap ---
+    if best_score < 0.70:
+        # Use activation_keywords if present, otherwise auto-extract from triggers.
+        keywords_raw: List[str] = activation.get("activation_keywords", [])
+        if not keywords_raw:
+            keywords_raw = []
+            for t in explicit:
+                keywords_raw.extend(t.lower().split())
+        keyword_set = {k.lower() for k in keywords_raw if len(k) > 2} - _STOPWORDS
+        if keyword_set:
+            overlap = prompt_words & keyword_set
+            if len(overlap) >= 2:
+                keyword_ratio = len(overlap) / len(keyword_set)
+                # Scale to 0.55-0.85 range.
+                scaled = 0.55 + (keyword_ratio * 0.30)
+                if scaled > best_score:
+                    best_score = scaled
+                    best_reason = "Keywords: {{{}}}".format(
+                        ", ".join(sorted(overlap)),
+                    )
+
+    return (best_score, best_reason)
+
+
+def match_agent_candidates(
+    prompt: str,
+    *,
+    max_results: int = 5,
+) -> List[Tuple[str, float, str]]:
+    """Match a prompt against all agents using multi-strategy scoring.
+
+    Returns a list of ``(category, score, reason)`` tuples sorted by
+    descending score.  Only candidates at or above ``HARD_FLOOR`` are
+    included.
+    """
+    if not prompt or not _RAW_JSON_AGENTS:
+        return []
+
+    prompt_lower = prompt.lower()
+    prompt_words = set(_extract_keywords(prompt))
+    candidates: List[Tuple[str, float, str]] = []
+
+    for agent in _RAW_JSON_AGENTS:
+        category = agent.get("category", "")
+        if not category:
+            continue
+        score, reason = _score_agent(prompt_lower, prompt_words, agent)
+        if score >= HARD_FLOOR:
+            candidates.append((category, score, reason))
+
+    candidates.sort(key=lambda c: c[1], reverse=True)
+    return candidates[:max_results]
 
 
 def match_agent(prompt: str) -> AgentContext:
-    """Match a prompt to the best agent using trigger keyword scoring.
+    """Match a prompt to the best agent using multi-strategy scoring.
 
     Uses the JSON agent configs loaded from ``.cursor/agents/*.json``.
-    Falls back to ``DEFAULT_CONTEXT`` if no agent scores above 0.
+    Falls back to ``DEFAULT_CONTEXT`` if no agent exceeds ``HARD_FLOOR``.
+
+    Backward-compatible: same signature and return type as the original.
     """
-    if not prompt or not _RAW_JSON_AGENTS:
-        return DEFAULT_CONTEXT
-
-    prompt_lower = prompt.lower()
-    best_score = 0.0
-    best_category: Optional[str] = None
-
-    for agent in _RAW_JSON_AGENTS:
-        score = _score_agent(prompt_lower, agent)
-        if score > best_score:
-            best_score = score
-            best_category = agent.get("category", "")
-
-    if best_category:
+    candidates = match_agent_candidates(prompt)
+    if candidates:
+        best_category = candidates[0][0]
         return _MERGED_CONTEXTS.get(best_category, DEFAULT_CONTEXT)
-
     return DEFAULT_CONTEXT

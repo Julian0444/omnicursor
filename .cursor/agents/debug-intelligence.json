@@ -4,7 +4,8 @@
   "category": "debug-intelligence",
   "activation_patterns": {
     "explicit_triggers": ["debug", "error", "troubleshoot", "investigate", "root cause", "bug", "failure analysis", "system issue", "traceback", "regression"],
-    "context_triggers": ["application not working correctly", "performance degradation detected", "error messages appearing", "system behaving unexpectedly", "integration failures"]
+    "context_triggers": ["application not working correctly", "performance degradation detected", "error messages appearing", "system behaving unexpectedly", "integration failures"],
+    "activation_keywords": ["debug", "error", "traceback", "failure", "bug"]
   },
   "instructions": [
     "Capture the exact symptom: error, failing test, or unexpected behavior",

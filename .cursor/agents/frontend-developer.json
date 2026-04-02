@@ -4,7 +4,8 @@
   "category": "frontend",
   "activation_patterns": {
     "explicit_triggers": ["frontend", "react", "typescript", "ui component", "build dashboard", "create component", "implement ui", "responsive design", "build interface", "develop component"],
-    "context_triggers": ["building React and TypeScript UI components", "implementing responsive and accessible frontend features", "developing a dashboard with data visualization", "scaffolding React components with state management"]
+    "context_triggers": ["building React and TypeScript UI components", "implementing responsive and accessible frontend features", "developing a dashboard with data visualization", "scaffolding React components with state management"],
+    "activation_keywords": ["react", "typescript", "component", "frontend", "css"]
   },
   "instructions": [
     "Build React components with hooks and functional patterns — no class components",

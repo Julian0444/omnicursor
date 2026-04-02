@@ -4,7 +4,8 @@
   "category": "review",
   "activation_patterns": {
     "explicit_triggers": ["address pr comments", "fix review feedback", "resolve pr comments", "update pr", "address review", "pr feedback", "review comments"],
-    "context_triggers": ["pull request review comments need resolution", "merge conflict resolution", "quality gate failures from reviews", "remote synchronization after review"]
+    "context_triggers": ["pull request review comments need resolution", "merge conflict resolution", "quality gate failures from reviews", "remote synchronization after review"],
+    "activation_keywords": ["address", "feedback", "resolve", "comments", "review"]
   },
   "instructions": [
     "Categorize PR comments by type: required changes, suggestions, questions, nits",

@@ -4,7 +4,8 @@
   "category": "generalist",
   "activation_patterns": {
     "explicit_triggers": [],
-    "context_triggers": []
+    "context_triggers": [],
+    "activation_keywords": []
   },
   "instructions": [
     "Analyze the request and determine if a specialized agent would be more appropriate",
