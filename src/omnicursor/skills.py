@@ -16,7 +16,11 @@ class SkillRepository:
         self.skills_dir = skills_dir
 
     def available_skills(self) -> List[str]:
-        return sorted(path.stem for path in self.skills_dir.glob("*.md"))
+        return sorted(
+            path.stem
+            for path in self.skills_dir.glob("*.md")
+            if path.stem.lower() != "readme"
+        )
 
     def resolve_path(self, skill_name: str) -> Path:
         filename = skill_name if skill_name.endswith(".md") else f"{skill_name}.md"

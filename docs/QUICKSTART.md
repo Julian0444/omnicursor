@@ -2,7 +2,7 @@
 
 OmniCursor has three layers:
 
-1. **Cursor Rules** (`.cursor/rules/`, 7 `.mdc` files) — behavior surface for routing and interaction
+1. **Cursor Rules** (`.cursor/rules/`, 9 `.mdc` files) — behavior surface for routing and interaction
 2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic, stdlib only, no LLM
 3. **MCP Tools** (`src/omnicursor/server.py`, 3 tools) — FastMCP backend for agent routing, skill loading, and compliance checking
 
@@ -31,10 +31,10 @@ The default transport is `stdio`, which is the right starting point for a local 
 ## Use in Cursor
 
 1. Open the repository root, not a parent folder.
-2. Confirm the 7 rules under `.cursor/rules/` are visible in Cursor Settings.
+2. Confirm the 8 rules under `.cursor/rules/` are visible in Cursor Settings.
 3. Register a local MCP server command that runs `omnicursor-server` from this repo's virtual environment.
 4. Hooks are automatically active via `.cursor/hooks.json` — no extra configuration needed.
-5. Use the rules for brainstorming, planning, ticketing, debugging, and adapter behavior.
+5. Use the rules for brainstorming, planning, ticketing, debugging, PR review, and session handoff.
 6. The MCP tools enhance each rule with routing, skill loading, and compliance checking.
 
 ## Available MCP Tools
@@ -45,23 +45,24 @@ Returns routing context (agent name, instructions, recommended skill) for a give
 
 | Category | Agent | Matching Rule | Recommended Skill |
 |----------|-------|---------------|-------------------|
-| `debugging` | systematic-debugger | 10-systematic-debugging.mdc | systematic-debugging |
+| `debugging` | systematic-debugger | 13-systematic-debugging.mdc | systematic-debugging |
 | `brainstorming` | brainstorming-guide | 10-brainstorming.mdc | brainstorming |
 | `planning` | plan-writer | 11-writing-plans.mdc | writing-plans |
 | `ticketing` | ticket-planner | 12-plan-ticket.mdc | plan-ticket |
-| `adapter` | adapter-guide | 20-adapter-stub.mdc | adapter-stub |
+| `review` | pr-review | 14-pr-review.mdc | pr-review |
+| `handoff` | handoff-guide | 15-handoff.mdc | handoff |
 
 Unrecognized categories fall back to `omnicursor-generalist`.
 
 ### `invoke_skill(skill_name: str)`
 
-Loads a Markdown skill from the `skills/` directory and returns its content. Available skills: `systematic-debugging`, `brainstorming`, `writing-plans`, `plan-ticket`, `adapter-stub`, `pr-review`, `pr-polish`, `hostile-reviewer`, `defense-in-depth`, `merge-planner`, `insights-to-plan`, `handoff`, `using-git-worktrees`.
+Loads a Markdown skill from the `skills/` directory and returns its content. Available skills: `systematic-debugging`, `brainstorming`, `writing-plans`, `plan-ticket`, `pr-review`, `pr-polish`, `hostile-reviewer`, `defense-in-depth`, `merge-planner`, `insights-to-plan`, `handoff`, `using-git-worktrees`.
 
 ### `check_compliance(skill_name: str, response_summary: str)`
 
-Checks whether a model response complies with a skill's expected output pattern. Returns a checklist with pass/fail for each expected element. All 13 skills have compliance registry entries.
+Checks whether a model response complies with a skill's expected output pattern. Returns a checklist with pass/fail for each expected element. All 12 skills have compliance registry entries.
 
-## Available Skills (13)
+## Available Skills (12)
 
 | Skill | File | Purpose |
 |-------|------|---------|
@@ -69,7 +70,6 @@ Checks whether a model response complies with a skill's expected output pattern.
 | `brainstorming` | `skills/brainstorming.md` | Refine ideas into validated design docs |
 | `writing-plans` | `skills/writing-plans.md` | Design docs into TDD implementation plans |
 | `plan-ticket` | `skills/plan-ticket.md` | Plans into YAML ticket contract templates |
-| `adapter-stub` | `skills/adapter-stub.md` | Bucket 3 dry-run stubs with fail-soft behavior |
 | `pr-review` | `skills/pr-review.md` | Severity-classified PR review with merge readiness verdict |
 | `pr-polish` | `skills/pr-polish.md` | Three-phase PR refinement to merge-ready state |
 | `hostile-reviewer` | `skills/hostile-reviewer.md` | Adversarial code review with iterative convergence |
@@ -101,9 +101,7 @@ A typical session using all three MCP tools:
    - Deterministic repo detection runs. YAML ticket template generated.
    - Rule calls `check_compliance("plan-ticket", summary)` to verify.
 
-4. **(Stage 2) User invokes `@20-adapter-stub` for external integration.**
-   - Rule calls `get_agent_context("adapter")` for routing context.
-   - Dry-run payload constructed. Fail-soft behavior enforced.
+**External systems (Linear, Kafka, etc.):** not covered by a Cursor rule in this repo — use your tracker / MCP outside OmniCursor, or read `docs/ARCHITECTURE.md` for the conceptual Bucket 3 contract.
 
 ## Hooks
 
@@ -115,7 +113,7 @@ Cursor hooks are deterministic Python scripts that fire on editor lifecycle even
 
 ### Active Hooks
 
-**`beforeSubmitPrompt` → `on_prompt.py`** — Classifies each prompt against the 16 agent configs in `.cursor/agents/` using three-strategy scoring: exact substring match (0.95), fuzzy `SequenceMatcher` with length-aware thresholds, and keyword overlap (0.55–0.85). `HARD_FLOOR = 0.55` discards weak matches. Emits `{"systemMessage": "<!-- OmniCursor Agent: <name> (confidence: <score>) -->"}` with the selected agent and any learned patterns from `~/.omnicursor/learned_patterns.json`. Falls back to `polymorphic-agent` with score 0.0 when no agent matches. Whether Cursor actually consumes the `systemMessage` output from `beforeSubmitPrompt` hooks is a platform uncertainty — the hook always emits it regardless.
+**`beforeSubmitPrompt` → `on_prompt.py`** — Classifies each prompt against the 17 agent configs in `.cursor/agents/` using three-strategy scoring: exact substring match (0.95), fuzzy `SequenceMatcher` with length-aware thresholds, and keyword overlap (0.55–0.85). `HARD_FLOOR = 0.55` discards weak matches. Emits `{"systemMessage": "<!-- OmniCursor Agent: <name> (confidence: <score>) -->"}` with the selected agent and any learned patterns from `~/.omnicursor/learned_patterns.json`. Falls back to `polymorphic-agent` with score 0.0 when no agent matches. Whether Cursor actually consumes the `systemMessage` output from `beforeSubmitPrompt` hooks is a platform uncertainty — the hook always emits it regardless.
 
 **`beforeShellExecution` → `on_shell.py`** — Guards against dangerous shell commands using a two-tier regex system. 9 hard-blocked patterns (e.g., `rm -rf /`, `--no-verify`, fork bombs, `base64 --decode | sh`) are denied outright. 11 risky patterns (e.g., `git push --force`, `DROP TABLE`, `curl | sh`, `eval`) are allowed with a warning injected into the agent context.
 

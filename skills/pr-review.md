@@ -8,8 +8,8 @@ Systematically review all PR changes, classify issues by severity, and produce a
 
 ## Prerequisites
 
-- A PR number or branch with open changes
-- Access to `gh` CLI for fetching PR data and comments
+- A PR number, branch with open changes, or a pasted diff / list of files to review
+- Optional: `gh` CLI for `gh pr view` when you are working against GitHub; if unavailable, use local `git diff` / Cursor diffs instead
 
 ## Workflow
 

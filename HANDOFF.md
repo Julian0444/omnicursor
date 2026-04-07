@@ -69,7 +69,7 @@ Created `skills/merge-planner.md`, `skills/insights-to-plan.md`, `skills/handoff
 
 ### Task 9: Final Verification
 
-- 122 tests passing
+- 120 tests passing
 - `ruff check` clean across `src/`, `tests/`, `.cursor/hooks/`
 - All hook smoke tests pass
 - MCP server imports cleanly
@@ -96,8 +96,8 @@ Created `skills/merge-planner.md`, `skills/insights-to-plan.md`, `skills/handoff
 |--------|-------|
 | `server.py` | 3 tools: `get_agent_context`, `invoke_skill`, `check_compliance` |
 | `agents.py` | Three-strategy scoring, `HARD_FLOOR=0.55`, `match_agent_candidates()`, backward-compatible `match_agent()`, dynamic JSON loading from `.cursor/agents/*.json` |
-| `compliance.py` | Registry for all 13 skills, 3–5 keyword checks each |
-| `skills.py` | Auto-discovers `skills/*.md` (13 skills) |
+| `compliance.py` | Registry for all 12 skills, 3–5 keyword checks each |
+| `skills.py` | Auto-discovers `skills/*.md` (12 skills) |
 | `schemas.py` | `AgentContext`, `SkillDocument`, `ComplianceResult`, `PatternRecord`, `DatabaseStatus` |
 | `db.py` | Repo path constants, `InMemoryDatabase` placeholder |
 | `patterns.py` | Lists 4 preserved rules as `PatternRecord` objects (static) |
@@ -110,13 +110,13 @@ All 16 configs have `activation_keywords` (5 each, except `polymorphic-agent` wh
 
 ### Skills (`skills/*.md`, 13 files)
 
-Original (5): `systematic-debugging`, `brainstorming`, `writing-plans`, `plan-ticket`, `adapter-stub`
+Original (4) plus ports: `systematic-debugging`, `brainstorming`, `writing-plans`, `plan-ticket`, and ported OmniClaude methodology skills (`pr-review`, `handoff`, etc.). **`adapter-stub` removed** — Bucket 3 remains documented only in `docs/ARCHITECTURE.md`.
 
 Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defense-in-depth`, `merge-planner`, `insights-to-plan`, `handoff`, `using-git-worktrees`
 
 ### Tests
 
-122 tests across 8 test files, all passing. `pytest tests/ -v` runs in ~0.3s.
+120 tests across 8 test files, all passing. `pytest tests/ -v` runs in ~0.3s.
 
 ---
 
@@ -168,7 +168,7 @@ Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defen
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Tests (122, ~0.3s)
+# Tests (120, ~0.3s)
 pytest tests/ -v
 
 # Lint

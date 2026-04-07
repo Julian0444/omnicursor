@@ -116,8 +116,7 @@ context:
 After outputting the template:
 
 ```
-**Next step**: To create this ticket in Linear, use the `linear` rule (requires Linear MCP — Stage 2).
-For now, save this template to `contract.yaml` and edit as needed.
+**Next step**: To create this ticket in Linear (or another tracker), complete manually in that system or use Cursor’s Linear MCP if configured. Save this template to `contract.yaml` (or your team’s path) and edit as needed.
 ```
 
 ---

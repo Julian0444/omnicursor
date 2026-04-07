@@ -206,24 +206,6 @@ COMPLIANCE_REGISTRY: Dict[str, List[Tuple[str, List[str]]]] = {
             "test", "baseline", "passing", "clean", "ready",
         ]),
     ],
-    "adapter-stub": [
-        ("identifies_bucket_3_operation", [
-            "bucket 3", "external", "linear", "kafka", "decompose",
-            "adapter", "service",
-        ]),
-        ("constructs_dry_run_payload", [
-            "dry_run", "dry run", "payload", "request",
-            "/onex/api/v1/skills/", "post",
-        ]),
-        ("shows_fail_soft_behavior", [
-            "fail-soft", "fail soft", "unavailable", "complete manually",
-            "service unavailable", "fallback",
-        ]),
-        ("no_automatic_retry", [
-            "not retry", "no retry", "do not retry", "does not retry",
-            "no loop", "never retry", "manual",
-        ]),
-    ],
 }
 
 

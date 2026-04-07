@@ -36,17 +36,9 @@ def test_load_plan_ticket_skill(repository: SkillRepository) -> None:
     assert "Plan Ticket" in skill.content
 
 
-def test_load_adapter_stub_skill(repository: SkillRepository) -> None:
-    skill = repository.load_skill("adapter-stub")
-    assert skill.skill_name == "adapter-stub"
-    assert skill.path == "skills/adapter-stub.md"
-    assert "Adapter Stub" in skill.content
-
-
 def test_available_skills_lists_all(repository: SkillRepository) -> None:
     available = repository.available_skills()
     expected = [
-        "adapter-stub",
         "brainstorming",
         "defense-in-depth",
         "handoff",

@@ -37,13 +37,6 @@ def test_ticketing_category() -> None:
     assert ctx.description != ""
 
 
-def test_adapter_category() -> None:
-    ctx = get_agent_context("adapter")
-    assert ctx.agent_name == "adapter-guide"
-    assert ctx.recommended_skill == "adapter-stub"
-    assert ctx.description != ""
-
-
 def test_fallback_for_unknown_category() -> None:
     ctx = get_agent_context("unknown-category")
     assert ctx.agent_name == "omnicursor-generalist"
@@ -71,13 +64,8 @@ def test_alias_ticket_routes_to_ticketing() -> None:
     assert ctx.agent_name == "ticket-planner"
 
 
-def test_alias_adapter_stub_routes_to_adapter() -> None:
-    ctx = get_agent_context("adapter-stub")
-    assert ctx.agent_name == "adapter-guide"
-
-
-def test_all_five_categories_present() -> None:
-    expected = {"debugging", "brainstorming", "planning", "ticketing", "adapter"}
+def test_all_four_categories_present() -> None:
+    expected = {"debugging", "brainstorming", "planning", "ticketing"}
     assert set(AGENT_CONTEXTS.keys()) == expected
 
 
@@ -108,7 +96,6 @@ def test_merged_contexts_includes_hardcoded_and_json() -> None:
     assert "brainstorming" in _MERGED_CONTEXTS
     assert "planning" in _MERGED_CONTEXTS
     assert "ticketing" in _MERGED_CONTEXTS
-    assert "adapter" in _MERGED_CONTEXTS
     # JSON-only categories
     assert "version-control" in _MERGED_CONTEXTS
     assert "research" in _MERGED_CONTEXTS
@@ -162,3 +149,14 @@ def test_get_agent_context_new_aliases() -> None:
     assert get_agent_context("db").agent_name == "debug-database"
     assert get_agent_context("react").agent_name == "frontend-developer"
     assert get_agent_context("fastapi").agent_name == "python-fastapi-expert"
+
+
+def test_get_agent_context_review_recommends_pr_review_skill() -> None:
+    ctx = get_agent_context("review")
+    assert ctx.recommended_skill == "pr-review"
+
+
+def test_get_agent_context_handoff_recommends_handoff_skill() -> None:
+    ctx = get_agent_context("handoff")
+    assert ctx.agent_name == "handoff-guide"
+    assert ctx.recommended_skill == "handoff"

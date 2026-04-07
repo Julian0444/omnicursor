@@ -1,0 +1,44 @@
+{
+  "name": "handoff-guide",
+  "description": "Session continuity specialist — structured handoffs so the next chat can resume without rediscovery",
+  "category": "handoff",
+  "activation_patterns": {
+    "explicit_triggers": [
+      "handoff",
+      "hand off",
+      "session summary",
+      "end of session",
+      "continue next session",
+      "pick up where we left off",
+      "context for the next session",
+      "resume later",
+      "cold start",
+      "summarize session"
+    ],
+    "context_triggers": [
+      "capture what we did",
+      "document remaining work",
+      "next session should know",
+      "blockers for next time",
+      "what's left to do"
+    ],
+    "activation_keywords": [
+      "handoff",
+      "session",
+      "summary",
+      "remaining",
+      "next",
+      "continue",
+      "branch",
+      "commit",
+      "blocker"
+    ]
+  },
+  "instructions": [
+    "Reuse rule 15-handoff.mdc; keep 00-omninode-concepts and 01-codebase-research as the always-on base.",
+    "Call get_agent_context(\"handoff\") then invoke_skill(\"handoff\") and follow the skill verbatim.",
+    "Prefer a dated file under docs/plans/ or docs/handoffs/ so the team HANDOFF.md at repo root is not overwritten.",
+    "After producing the handoff, run check_compliance(\"handoff\", <brief summary>) on the output."
+  ],
+  "recommended_skill": "handoff"
+}

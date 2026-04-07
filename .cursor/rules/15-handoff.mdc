@@ -1,0 +1,29 @@
+---
+description: Activates when the user wants a session handoff, session summary, context for the next chat, or to capture remaining work and blockers before stopping. Uses OmniCursor MCP tools without replacing the preserved starter-kit rules.
+globs:
+alwaysApply: false
+---
+
+# Session handoff
+
+**Rule file:** `15-handoff.mdc`. In Cursor Composer, mention **`@15-handoff`** to attach this rule explicitly.
+
+This rule complements the preserved OmniNode starter-kit rules.
+It does not replace `00-omninode-concepts`, `01-codebase-research`, `02-no-secrets-in-commits`, `10-brainstorming`, `11-writing-plans`, `12-plan-ticket`, `13-systematic-debugging`, or `14-pr-review`.
+
+## Routing Contract
+
+1. Self-classify the request as **`handoff`** (aliases: `session-handoff`, `continuity`).
+2. Call MCP tool **`get_agent_context`** with `category="handoff"`.
+3. Call MCP tool **`invoke_skill`** with `skill_name="handoff"`.
+4. Call **`check_compliance`** with `skill_name="handoff"` and a brief summary of the handoff document.
+
+## Working Style
+
+- Prefer writing a **dated artifact** under `docs/plans/` or `docs/handoffs/` (e.g. `docs/handoffs/YYYY-MM-DD-session.md`) so the repo-root `HANDOFF.md` (team continuity doc) is not overwritten unless the user asks for that file by name.
+- Include branch, recent commits, files in play, ordered next steps, and blockers.
+
+## Handoffs
+
+- If the user needs a PR assessment, hand off to **`14-pr-review`**.
+- If the user needs implementation planning next, hand off to **`11-writing-plans`**.

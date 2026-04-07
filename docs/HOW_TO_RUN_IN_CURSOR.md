@@ -1,6 +1,6 @@
 # How to Run in Cursor
 
-> **Historical document.** These are the original starter-pack instructions. The project has since evolved to include hooks, MCP tools, and 13 skills. For current setup instructions, see [`docs/QUICKSTART.md`](./QUICKSTART.md).
+> **Historical document.** These are the original starter-pack instructions. The project has since evolved to include hooks, MCP tools, and 12 skills (no `adapter-stub`). For current setup instructions, see [`docs/QUICKSTART.md`](./QUICKSTART.md).
 
 Step-by-step instructions for loading and using the OmniNode Cursor starter pack.
 
@@ -30,7 +30,6 @@ Settings (⌘,) → Rules → should show 6 rules:
   10-brainstorming
   11-writing-plans
   12-plan-ticket
-  20-adapter-stub
 ```
 
 If rules are missing:
@@ -99,7 +98,7 @@ If the expected rule doesn't activate:
 | Design files | `docs/plans/YYYY-MM-DD-*-design.md` | `10-brainstorming` |
 | Plan files | `docs/plans/YYYY-MM-DD-*.md` | `11-writing-plans` |
 | Ticket templates | stdout (Composer output) | `12-plan-ticket` |
-| Adapter payloads | stdout (Composer output) | `20-adapter-stub` |
+| External / Bucket 3 work | Manual or Cursor MCP outside OmniCursor rules | _(no adapter-stub rule in repo)_ |
 
 ---
 

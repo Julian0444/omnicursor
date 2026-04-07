@@ -35,7 +35,7 @@ This rule is always active. It defines vocabulary, the code-generation pipeline,
 ```
 
 Rules in this starter pack cover stages 1–3 (Buckets 1–2).
-Stages 4–5 require external services and are covered by the adapter stub only (Bucket 3).
+Stages 4–5 require external services (Bucket 3); they are outside in-repo Cursor rule coverage — use external tools or manual steps. See `docs/ARCHITECTURE.md` for the conceptual contract only.
 
 ---
 
@@ -55,7 +55,7 @@ Stages 4–5 require external services and are covered by the adapter stub only 
 
 > **Rules in this starter pack CANNOT call Linear or Kafka.**
 >
-> If a task requires Linear ticket creation, Kafka event emission, or Python validation with omnibase_core, **stop** and write an adapter stub instead (see rule `20-adapter-stub`).
+> If a task requires Linear ticket creation, Kafka event emission, or Python validation with omnibase_core, **stop** — do not pretend those calls succeeded in Cursor. Describe required dependencies, output a dry-run style payload only if the user asks (see `docs/ARCHITECTURE.md`), and give **complete manually** steps. There is no `adapter-stub` skill or `@20-adapter-stub` rule in this repository.
 >
 > Do not attempt to simulate Linear API calls, mock Kafka topics, or import omnibase_core in Cursor rules. These are Bucket 3 concerns outside this starter pack's scope.
 

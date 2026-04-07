@@ -27,10 +27,5 @@ def list_preserved_patterns() -> List[PatternRecord]:
             description="Preserved bounded repo-detection and ticket template rule.",
             source=str(RULES_DIR / "12-plan-ticket.mdc"),
         ),
-        PatternRecord(
-            name="adapter-stub",
-            description="Preserved Bucket 3 dry-run and fail-soft rule.",
-            source=str(RULES_DIR / "20-adapter-stub.mdc"),
-        ),
     ]
 

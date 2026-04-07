@@ -30,7 +30,7 @@ Sessions end for many reasons — context limits, breaks, or task switches. With
    Record anything the next session should know: failing tests with known causes, environment issues, dependencies on external work, or decisions that need user input.
 
 5. **Write the handoff manifest.**
-   Save the handoff to `docs/HANDOFF.md` or a session-specific file. The manifest should be self-contained — a reader with access to the repo but no prior context should understand what to do next.
+   Save to a **session-specific path** such as `docs/handoffs/YYYY-MM-DD-<short-slug>.md` or `docs/plans/YYYY-MM-DD-session-handoff.md`. Prefer **not** overwriting the repo-root `HANDOFF.md` unless the user explicitly asks — that file is often the team's long-lived continuity doc. The manifest should be self-contained — a reader with access to the repo but no prior context should understand what to do next.
 
 ## Expected Output Format
 

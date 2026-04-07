@@ -7,11 +7,10 @@ These existing files were reviewed and intentionally preserved as the architectu
 - [`.cursor/rules/00-omninode-concepts.mdc`](../.cursor/rules/00-omninode-concepts.mdc): always-on vocabulary, pipeline stages, bucket boundaries
 - [`.cursor/rules/01-codebase-research.mdc`](../.cursor/rules/01-codebase-research.mdc): bounded file-research guard
 - [`.cursor/rules/10-brainstorming.mdc`](../.cursor/rules/10-brainstorming.mdc): idea-to-design methodology
-- [`.cursor/rules/10-systematic-debugging.mdc`](../.cursor/rules/10-systematic-debugging.mdc): structured debugging methodology
+- [`.cursor/rules/13-systematic-debugging.mdc`](../.cursor/rules/13-systematic-debugging.mdc): structured debugging methodology
 - [`.cursor/rules/11-writing-plans.mdc`](../.cursor/rules/11-writing-plans.mdc): design-to-plan methodology
 - [`.cursor/rules/12-plan-ticket.mdc`](../.cursor/rules/12-plan-ticket.mdc): bounded repo detection and YAML ticket template generation
-- [`.cursor/rules/20-adapter-stub.mdc`](../.cursor/rules/20-adapter-stub.mdc): Bucket 3 dry-run and fail-soft pattern
-- [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md): frozen adapter contract and bucket rules (starter-pack artifact)
+- [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md): frozen adapter contract and bucket rules (starter-pack artifact; Bucket 3 operational rules are not shipped in this repo)
 - [`docs/STUDENT_GUIDE.md`](./STUDENT_GUIDE.md): capstone execution and grading flow (starter-pack artifact)
 - [`docs/SKILL_TRANSLATION_TEMPLATE.md`](./SKILL_TRANSLATION_TEMPLATE.md): rule-porting template (starter-pack artifact)
 - [`tests/prompts`](../tests/prompts): prompt fixtures for rule behavior
@@ -19,13 +18,18 @@ These existing files were reviewed and intentionally preserved as the architectu
 - [`docs/HOW_TO_RUN_IN_CURSOR.md`](./HOW_TO_RUN_IN_CURSOR.md): original starter-pack setup instructions (historical — see note below)
 - [`OMNICLAUDE_SKILLS.md`](../OMNICLAUDE_SKILLS.md): skill inventory to mine for future ports
 
+**OmniCursor extensions (not starter-pack originals):**
+
+- [`.cursor/rules/14-pr-review.mdc`](../.cursor/rules/14-pr-review.mdc): PR / merge-readiness methodology + MCP (`review` → `pr-review` skill)
+- [`.cursor/rules/15-handoff.mdc`](../.cursor/rules/15-handoff.mdc): session handoff methodology + MCP (`handoff` category → `handoff` skill)
+
 ## Three-Layer Architecture
 
 OmniCursor extends the starter kit with two additional layers:
 
 ### Layer 1: Cursor Rules (preserved)
 
-The preserved rules stay as the top-level behavior layer inside Cursor. Rules `00`/`01` are always-on; `10`-`20` activate on keyword match.
+The preserved rules stay as the top-level behavior layer inside Cursor. Rules `00`/`01` are always-on; `10`–`15` activate on keyword match (including extensions `14`–`15`).
 
 ### Layer 2: Cursor Hooks (`.cursor/hooks/`)
 
@@ -48,8 +52,8 @@ FastMCP backend providing structured capabilities that rules can call.
 |--------|---------|
 | `server.py` | FastMCP server with 3 tools: `get_agent_context`, `invoke_skill`, `check_compliance` |
 | `agents.py` | Agent routing with three-strategy scoring (exact/fuzzy/keyword), `HARD_FLOOR = 0.55`, dynamic JSON loading from `.cursor/agents/*.json`, backward-compatible `get_agent_context(category)` |
-| `skills.py` | Auto-discovers and loads Markdown skills from `skills/` (13 skills) |
-| `compliance.py` | Keyword-based compliance registry with 3–5 checks per skill (13 skills) |
+| `skills.py` | Auto-discovers and loads Markdown skills from `skills/` (12 skills) |
+| `compliance.py` | Keyword-based compliance registry with 3–5 checks per skill (12 skills) |
 | `schemas.py` | Pydantic v2 models: `AgentContext`, `SkillDocument`, `ComplianceResult`, `PatternRecord`, `DatabaseStatus` |
 | `patterns.py` | Lists 4 preserved rules as `PatternRecord` objects (static) |
 | `db.py` | Repo paths (`REPO_ROOT`, `SKILLS_DIR`, `RULES_DIR`) and `InMemoryDatabase` placeholder |
@@ -72,7 +76,7 @@ Agent definitions are loaded dynamically from `.cursor/agents/*.json` (16 config
 
 For example:
 
-- `10-systematic-debugging.mdc` classifies a debugging request as `debugging`
+- `13-systematic-debugging.mdc` classifies a debugging request as `debugging`
 - it calls `get_agent_context("debugging")`
 - it then calls `invoke_skill("systematic-debugging")`
 - the always-on preserved rules still provide vocabulary and bounded research constraints

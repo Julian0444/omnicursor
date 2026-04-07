@@ -13,7 +13,7 @@ pip install -e ".[dev]"
 omnicursor-server
 
 # Tests
-pytest tests/ -v              # full suite (122 tests)
+pytest tests/ -v              # full suite (120 tests)
 pytest tests/test_agents.py -v  # single file
 pytest tests/ -k "test_debug"   # by name pattern
 
@@ -25,13 +25,13 @@ ruff check src/ tests/ .cursor/hooks/
 
 OmniCursor is a Cursor-native adaptation of OmniClaude, built from three layers:
 
-1. **Cursor Rules** (`.cursor/rules/`, 7 `.mdc` files) — behavior surface. Rules `00`/`01` are always-on; `10`-`20` activate on keyword match. Rules call MCP tools for routing, skills, and compliance.
+1. **Cursor Rules** (`.cursor/rules/`, 9 `.mdc` files) — behavior surface. Rules `00`–`02` are always-on; `10`–`15` activate on keyword match. Rules call MCP tools for routing, skills, and compliance.
 2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic lifecycle scripts, stdlib only, no LLM.
 3. **MCP Tools** (`src/omnicursor/server.py`, 3 tools) — FastMCP backend for `get_agent_context`, `invoke_skill`, `check_compliance`.
 
 ### Agent routing — two merge layers + three-strategy scoring
 
-`agents.py` merges hardcoded `AGENT_CONTEXTS` (5 categories: debugging, brainstorming, planning, ticketing, adapter) with dynamically loaded JSON from `.cursor/agents/*.json` (16 configs). JSON overlays hardcoded via `{**AGENT_CONTEXTS, **_JSON_AGENTS}`. The `ALIASES` dict maps shorthand names to canonical categories.
+`agents.py` merges hardcoded `AGENT_CONTEXTS` (4 categories: debugging, brainstorming, planning, ticketing) with dynamically loaded JSON from `.cursor/agents/*.json` (17 configs). JSON overlays hardcoded via `{**AGENT_CONTEXTS, **_JSON_AGENTS}`. The `ALIASES` dict maps shorthand names to canonical categories.
 
 Both `on_prompt.py` and `agents.py` use identical three-strategy scoring:
 
@@ -63,7 +63,7 @@ Both `on_prompt.py` and `agents.py` use identical three-strategy scoring:
 - **Gate 3 — Abandoned**: no completion markers AND session duration < 60 seconds.
 - **Gate 4 — Unknown**: ambiguous signals (catch-all).
 
-### Skills (13 total)
+### Skills (12 total)
 
 | Skill | Bucket | Source |
 |-------|--------|--------|
@@ -71,7 +71,6 @@ Both `on_prompt.py` and `agents.py` use identical three-strategy scoring:
 | `brainstorming` | 1 | Original |
 | `writing-plans` | 1 | Original |
 | `plan-ticket` | 2 | Original |
-| `adapter-stub` | 3 | Original |
 | `pr-review` | 1 | Ported from OmniClaude |
 | `pr-polish` | 1 | Ported from OmniClaude |
 | `hostile-reviewer` | 1 | Ported from OmniClaude |
@@ -85,11 +84,11 @@ Both `on_prompt.py` and `agents.py` use identical three-strategy scoring:
 
 - **Bucket 1** (systematic-debugging, brainstorming, writing-plans, pr-review, pr-polish, hostile-reviewer, defense-in-depth, merge-planner, insights-to-plan, handoff, using-git-worktrees): pure methodology, no external calls.
 - **Bucket 2** (plan-ticket): reads bounded local files only.
-- **Bucket 3** (adapter-stub): external integration, always `dry_run: true` first, fail-soft on error.
+- **Bucket 3** (concept only in this repo): external integration — see `docs/ARCHITECTURE.md` and rule `00-omninode-concepts`. There is **no** `adapter-stub` skill or `@20-adapter-stub` rule in-tree; handle Linear/Kafka/validator work outside Cursor rules or document manual steps.
 
 ### Compliance registry (`compliance.py`)
 
-`COMPLIANCE_REGISTRY` maps each of the 13 skills to 3–5 keyword-based checks. `check_compliance(skill_name, response_summary)` returns a `ComplianceResult` with per-check pass/fail and an overall `compliant` boolean.
+`COMPLIANCE_REGISTRY` maps each of the 12 skills to 3–5 keyword-based checks. `check_compliance(skill_name, response_summary)` returns a `ComplianceResult` with per-check pass/fail and an overall `compliant` boolean.
 
 ## Key constraints
 

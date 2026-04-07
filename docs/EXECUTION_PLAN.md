@@ -9,14 +9,14 @@
 1. Preserved and rooted the starter-kit rules, docs, prompts, and rubrics
 2. Added the MCP package skeleton under `src/omnicursor/`
 3. Implemented routing context (`agents.py`) and skill loading (`skills.py`)
-4. Added the debugging skill and its rule (`10-systematic-debugging.mdc`)
+4. Added the debugging skill and its rule (`13-systematic-debugging.mdc`)
 5. Verified basic imports, tests, and run docs
 
 ### Phase 2 — MCP Tools (complete)
 
 1. Added `check_compliance` as a real MCP tool with keyword-based registry
 2. Added `patterns.py` as a static pattern catalog for preserved rules
-3. Ported brainstorming, writing-plans, plan-ticket, and adapter-stub as `skills/*.md`
+3. Ported brainstorming, writing-plans, and plan-ticket as `skills/*.md` (plus additional methodology skills; `adapter-stub` removed from tree)
 4. Added 16 agent JSON configs in `.cursor/agents/`
 
 ### Phase 3A — Hooks Infrastructure (complete)
@@ -31,11 +31,11 @@
 8. Added `activation_keywords` to all 16 agent JSON configs
 9. Upgraded `agents.py` to three-strategy scoring with `HARD_FLOOR = 0.55`, `match_agent_candidates()`, backward-compatible `match_agent()`
 10. Ported 8 methodology skills from OmniClaude: pr-review, pr-polish, hostile-reviewer, defense-in-depth, merge-planner, insights-to-plan, handoff, using-git-worktrees
-11. Added compliance registry entries for all 13 skills
+11. Added compliance registry entries for all skills in `skills/` (12 after removing `adapter-stub`)
 
 ### Final Verification (complete)
 
-- 122 tests passing
+- 120 tests passing
 - `ruff check` clean across `src/`, `tests/`, `.cursor/hooks/`
 - All hook smoke tests pass
 - MCP server imports cleanly

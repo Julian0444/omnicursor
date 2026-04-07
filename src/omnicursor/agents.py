@@ -102,17 +102,6 @@ AGENT_CONTEXTS: Dict[str, AgentContext] = {
         ],
         recommended_skill="plan-ticket",
     ),
-    "adapter": AgentContext(
-        agent_name="adapter-guide",
-        description="Bucket 3 adapter stub agent — dry-run protocol and fail-soft behavior.",
-        instructions=[
-            "Reuse the preserved 20-adapter-stub rule for Bucket 3 dry-run behavior.",
-            "Always call dry_run: true first; never skip.",
-            "Do not skip the fail-soft contract described in docs/ARCHITECTURE.md.",
-            "Output complete request payloads for review, never execute live calls.",
-        ],
-        recommended_skill="adapter-stub",
-    ),
 }
 
 
@@ -134,9 +123,6 @@ ALIASES: Dict[str, str] = {
     "plan-ticket": "ticketing",
     "ticket": "ticketing",
     "tickets": "ticketing",
-    "adapter-stub": "adapter",
-    "bucket-3": "adapter",
-    "stub": "adapter",
     # New aliases for JSON-loaded categories
     "debug-intelligence": "debug-intelligence",
     "version-control": "version-control",
@@ -153,6 +139,9 @@ ALIASES: Dict[str, str] = {
     "review": "review",
     "pr": "review",
     "pull-request": "review",
+    "pr-review": "review",
+    "session-handoff": "handoff",
+    "continuity": "handoff",
     "docs": "documentation",
     "documentation": "documentation",
     "security": "security",

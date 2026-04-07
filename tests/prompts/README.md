@@ -7,6 +7,5 @@ Markdown prompts used to exercise Cursor **rules** (especially methodology rules
 | [`brainstorming/`](./brainstorming/) | `10-brainstorming.mdc` |
 | [`writing-plans/`](./writing-plans/) | `11-writing-plans.mdc` |
 | [`plan-ticket/`](./plan-ticket/) | `12-plan-ticket.mdc` |
-| [`adapter-stub/`](./adapter-stub/) | `20-adapter-stub.mdc` |
 
 **Usage:** Open the prompt in Composer with the appropriate `@rule` and grade against the rubric.

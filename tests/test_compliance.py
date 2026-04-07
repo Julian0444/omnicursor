@@ -68,7 +68,6 @@ def test_all_skills_have_registry_entries() -> None:
         "brainstorming",
         "writing-plans",
         "plan-ticket",
-        "adapter-stub",
         "pr-review",
         "pr-polish",
         "hostile-reviewer",
@@ -102,16 +101,4 @@ def test_plan_ticket_compliance() -> None:
         "Verification: pytest and ruff lint checks. Blocking: true."
     )
     result = check_compliance("plan-ticket", summary)
-    assert result.compliant is True
-
-
-def test_adapter_stub_compliance() -> None:
-    summary = (
-        "Identified Bucket 3 operation: decompose-epic. "
-        "External dependency: Linear MCP service. "
-        "Dry-run request payload with dry_run: true and POST /onex/api/v1/skills/. "
-        "Service unavailable. Complete manually: open Linear and create tickets. "
-        "Does not retry automatically."
-    )
-    result = check_compliance("adapter-stub", summary)
     assert result.compliant is True

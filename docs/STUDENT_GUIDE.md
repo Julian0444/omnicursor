@@ -2,7 +2,7 @@
 
 Welcome to the OmniNode Capstone Cursor Starter Pack. This guide walks you through 6 phases
 of progressively increasing complexity, from reading existing skills to implementing and testing
-a live adapter stub.
+the methodology pipeline through ticket templates.
 
 ---
 
@@ -12,13 +12,11 @@ a live adapter stub.
 - Clone: `git clone https://github.com/OmniNode-ai/omniclaude.git`
 - No OmniNode infrastructure, Linear, Kafka, or Python runtime required
 
-**Stage 2 (Phase 6 stub, bonus):** Uses the adapter contract spec in `docs/ARCHITECTURE.md`.
-- You do NOT need access to any other OmniNode repo
-- All Bucket 3 behavior is stubbed and tested against a mock endpoint only
+**Bucket 3 (read-only in this pack):** See `docs/ARCHITECTURE.md` for the frozen contract narrative. This OmniCursor tree does **not** ship a Cursor rule or `adapter-stub` skill — capstone demos stop at YAML ticket templates + manual tracker steps unless your course adds integration separately.
 
 ---
 
-## 6-Phase Plan
+## 5-Phase Plan
 
 | Phase | What | Artifacts | Pass Criteria |
 |-------|------|-----------|---------------|
@@ -26,8 +24,7 @@ a live adapter stub.
 | **2 Translate brainstorming** | Port `brainstorming/SKILL.md` → `10-brainstorming.mdc` | Rule file + Cursor session transcript | Passes brainstorming rubric with all 3 test prompts |
 | **3 Full methodology pipeline** | Port `writing-plans/SKILL.md` → `11-writing-plans.mdc` and `plan-ticket/SKILL.md` → `12-plan-ticket.mdc` | 3 rule files chained | Chain passes: idea → design file → plan file → ticket template |
 | **4 Integration gap** | Attempt porting `decompose-epic/SKILL.md`. Document what breaks. Write `adapter-interface.md` | `adapter-interface.md` doc | Correctly identifies all Bucket 3 deps; defines input schema for adapter |
-| **5 Adapter stub** | Implement `20-adapter-stub.mdc` against a mock endpoint | Rule file + mock server session | Stub rubric passes: dry_run first, fail-soft on timeout, no live calls |
-| **6 Demo** | Live Cursor session: brainstorm → plan → ticket template in one chain | `cursor-omninode.zip` | Full chain in one session; all rubrics pass |
+| **5 Demo** | Live Cursor session: brainstorm → plan → ticket template in one chain | `cursor-omninode.zip` | Full chain in one session; brainstorming, writing-plans, and plan-ticket rubrics pass |
 
 ---
 
@@ -132,37 +129,7 @@ Write `adapter-interface.md` documenting:
 
 ---
 
-## Phase 5: Adapter Stub
-
-Implement `20-adapter-stub.mdc` and test it against a mock server.
-
-### Mock Server Setup
-
-You can use any HTTP mock tool (e.g., `json-server`, `mockoon`, `httpie --simulate`). The mock
-server should respond to:
-
-```
-POST /onex/api/v1/skills/decompose-epic
-```
-
-with:
-```json
-{"status": "ok", "stdout": "Mock response: would create 3 tickets", "artifacts": []}
-```
-
-And respond to a timeout scenario by delaying 11+ seconds (to test fail-soft).
-
-### Pass Criteria (from `tests/rubrics/adapter-stub.md`)
-
-- [ ] Request payload conforms to contract schema (all required fields present)
-- [ ] `dry_run: true` set at top level on first call
-- [ ] Rule does NOT attempt to call Linear MCP directly
-- [ ] Fail-soft message produced when endpoint is unavailable
-- [ ] No automatic retry after failure
-
----
-
-## Phase 6: Demo
+## Phase 5: Demo (methodology chain)
 
 Run a complete live Cursor session demonstrating the full chain:
 
@@ -170,17 +137,12 @@ Run a complete live Cursor session demonstrating the full chain:
 2. Brainstorm an idea (use any of the test prompts or your own)
 3. Generate the implementation plan from the design doc
 4. Generate the ticket template from the plan
-5. Show the adapter stub handling a decompose-epic request (with fail-soft)
+
+For **Bucket 3 / decompose-epic**, stop at Phase 4’s written `adapter-interface.md` (or describe manual Linear steps). There is no in-repo `20-adapter-stub.mdc` or `tests/rubrics/adapter-stub.md` in this repository baseline.
 
 ### Deliverable
 
-Zip the entire `cursor-omninode/` folder (including any `docs/plans/` files you wrote during testing):
-
-```
-cd docs/capstone && zip -r cursor-omninode-starter.zip cursor-omninode/
-```
-
-Submit `cursor-omninode-starter.zip`.
+Zip the entire starter folder (including any `docs/plans/` files you wrote during testing) per your course instructions.
 
 ---
 

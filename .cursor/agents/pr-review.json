@@ -14,5 +14,5 @@
     "Verify test coverage for new and modified code paths",
     "Check for breaking changes in public interfaces"
   ],
-  "recommended_skill": null
+  "recommended_skill": "pr-review"
 }
