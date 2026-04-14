@@ -11,7 +11,6 @@ from omnicursor.node_contracts import (
     hooks_registration_ok,
     iter_contract_paths,
     load_all_contracts,
-    load_contract,
 )
 
 
