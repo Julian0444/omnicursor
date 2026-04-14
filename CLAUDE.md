@@ -25,7 +25,7 @@ ruff check src/ tests/ .cursor/hooks/
 
 OmniCursor is a Cursor-native adaptation of OmniClaude, built from three layers:
 
-1. **Cursor Rules** (`.cursor/rules/`, 9 `.mdc` files) — behavior surface. Rules `00`–`02` are always-on; `10`–`15` activate on keyword match. Rules call MCP tools for routing, skills, and compliance.
+1. **Cursor Rules** (`.cursor/rules/`, 11 `.mdc` files) — behavior surface. Rules `00`–`02` are always-on; `10`–`17` activate on keyword match (`16` / `17` = Linear create / consume). Rules call MCP tools for routing, skills, and compliance.
 2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic lifecycle scripts, stdlib only, no LLM.
 3. **MCP Tools** (`src/omnicursor/server.py`, 3 tools) — FastMCP backend for `get_agent_context`, `invoke_skill`, `check_compliance`.
 
@@ -106,6 +106,6 @@ When documents disagree, use this order:
 
 1. Actual current codebase behavior
 2. This file (`CLAUDE.md`) — repo conventions and architecture overview
-3. `docs/OMNICURSOR_IMPLEMENTATION_BRIEF.md` — implementation decisions
+3. `docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md` — implementation decisions
 4. `omnicursor-team-guidance.md` — demo-focused guidance from Jonah
 5. `omniclaude-main/` — read-only reference library

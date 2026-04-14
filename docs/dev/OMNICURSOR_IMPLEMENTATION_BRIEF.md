@@ -255,7 +255,7 @@ Avoid these failure modes:
 Use this prompt when asking Cursor or Codex to implement more OmniCursor work:
 
 ```text
-Use `docs/OMNICURSOR_IMPLEMENTATION_BRIEF.md` as the primary implementation brief for this task.
+Use `docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md` as the primary implementation brief for this task.
 
 Project context:
 - OmniCursor is a Cursor-native adaptation of OmniClaude

@@ -2,7 +2,7 @@
 
 This document is the written deliverable for capturing how **OmniCursor** (Cursor-native) maps product lifecycle hooks to **Claude Code / OmniClaude-style** hooks, what parity exists, and where gaps matter for future work (Phase 3B, rubric evidence).
 
-**Source of truth:** current repo behavior, then `CLAUDE.md` and `HANDOFF.md`. The `omniclaude-main/` tree is a read-only reference for methodology patterns, not a mandate for API parity.
+**Source of truth:** current repo behavior, then `CLAUDE.md` and `docs/dev/HANDOFF.md`. The `omniclaude-main/` tree is a read-only reference for methodology patterns, not a mandate for API parity.
 
 ---
 
@@ -86,7 +86,7 @@ Until registered in `.cursor/hooks.json` and implemented, these are **design pla
 
 ## Related docs
 
-- `docs/ADR-hook-first-architecture.md` — why hooks vs rules vs MCP (consolidation story)
+- [`ADR-hook-first-architecture.md`](./ADR-hook-first-architecture.md) — why hooks vs rules vs MCP (consolidation story)
 - `CLAUDE.md` — architecture and hook execution table
-- `HANDOFF.md` — task history, demo criteria, known ambiguities
+- [`HANDOFF.md`](./HANDOFF.md) — task history, demo criteria, known ambiguities
 - `OmniCursor_DoD_Rubric.md` — observable verification (e.g. hook smoke tests, rubric §2)

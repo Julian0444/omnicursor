@@ -11,7 +11,7 @@
 OmniCursor has three behavioral layers:
 
 1. **Cursor Rules** (`.cursor/rules/*.mdc`) — instructions the model sees when keywords match; can invoke MCP tools.
-2. **Cursor Hooks** (`.cursor/hooks/`) — deterministic, stdlib-only scripts on lifecycle events; see `docs/CURSOR_VS_CLAUDE_HOOKS.md`.
+2. **Cursor Hooks** (`.cursor/hooks/`) — deterministic, stdlib-only scripts on lifecycle events; see [`CURSOR_VS_CLAUDE_HOOKS.md`](./CURSOR_VS_CLAUDE_HOOKS.md).
 3. **MCP** (`src/omnicursor/`) — `get_agent_context`, `invoke_skill`, `check_compliance`.
 
 **Problem statement:** The same **concerns** (routing, compliance, patterns, telemetry) can appear in more than one layer. Without explicit ownership, documentation and behavior drift (e.g. two scoring implementations).
@@ -74,6 +74,6 @@ Adopt a **hook-first** default for ** lifecycle-triggered, deterministic** work 
 
 ## References
 
-- `docs/CURSOR_VS_CLAUDE_HOOKS.md`
-- `CLAUDE.md`, `docs/DEVELOPER.md`, `HANDOFF.md`
+- [`CURSOR_VS_CLAUDE_HOOKS.md`](./CURSOR_VS_CLAUDE_HOOKS.md)
+- `CLAUDE.md`, [`DEVELOPER.md`](./DEVELOPER.md), [`HANDOFF.md`](./HANDOFF.md)
 - `OmniCursor_DoD_Rubric.md`

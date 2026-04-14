@@ -6,7 +6,7 @@ Cursor-native adaptation of OmniClaude — combining rules, hooks, and tools int
 
 OmniCursor has three complementary layers:
 
-1. **Cursor Rules** (9 `.mdc` files in `.cursor/rules/`) — behavior surface for routing and interaction; always-on + keyword-activated
+1. **Cursor Rules** (11 `.mdc` files in `.cursor/rules/`) — behavior surface for routing and interaction; always-on + keyword-activated
 2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic, stdlib only, no LLM
 3. **MCP Tools** (3 tools in `src/omnicursor/server.py`) — FastMCP backend for agent routing, skill invocation, and compliance validation
 
@@ -55,7 +55,7 @@ All hooks use stdlib only (no pip dependencies).
 
 ## Skills
 
-12 Markdown methodology skills in [`skills/`](./skills/):
+14 Markdown skills in [`skills/`](./skills/):
 
 | Skill | Purpose |
 |-------|---------|
@@ -63,6 +63,8 @@ All hooks use stdlib only (no pip dependencies).
 | `brainstorming` | Refine ideas into design docs through collaborative dialogue |
 | `writing-plans` | Convert designs into TDD implementation plans |
 | `plan-ticket` | Generate YAML ticket contract templates with repo detection |
+| `create-ticket` | Create Linear issues from YAML via Cursor Linear MCP (Bucket 3) |
+| `consume-ticket` | Linear issue → intake, or confirm done → status + verification comment (Bucket 3) |
 | `pr-review` | Severity-classified PR review with merge readiness verdict |
 | `pr-polish` | Three-phase PR refinement to merge-ready state |
 | `hostile-reviewer` | Adversarial code review with iterative convergence |
@@ -83,11 +85,11 @@ Major folders include their own **`README.md`** (e.g. `.cursor/`, `docs/`, `skil
 ```text
 OmniCursor/
 ├── .cursor/
-│   ├── rules/              # 9 Cursor rules (.mdc)
+│   ├── rules/              # 11 Cursor rules (.mdc)
 │   ├── hooks/              # 4 hook entrypoints + _common.py + pattern_loader.py
 │   ├── hooks.json          # Hook configuration
 │   └── agents/             # 17 JSON agent configs
-├── docs/                   # Architecture, quickstart, guides
+├── docs/                   # QUICKSTART, ARCHITECTURE; dev/ for internal & progress docs
 ├── skills/                 # 12 Markdown skill files
 ├── src/omnicursor/         # Python MCP backend
 ├── tests/                  # Unit tests (120 tests)
@@ -108,8 +110,8 @@ ruff check src/ tests/ .cursor/hooks/
 
 - [`CLAUDE.md`](./CLAUDE.md) — Repo conventions, architecture overview, source-of-truth hierarchy
 - [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) — Setup, MCP tools, hooks, and end-to-end flow
-- [`docs/HANDOFF.md`](./docs/HANDOFF.md) — Current implementation state and remaining work
-- [`docs/OMNICURSOR_IMPLEMENTATION_BRIEF.md`](./docs/OMNICURSOR_IMPLEMENTATION_BRIEF.md) — Implementation decisions and copy map from OmniClaude
+- [`docs/dev/HANDOFF.md`](./docs/dev/HANDOFF.md) — Current implementation state and remaining work
+- [`docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md`](./docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md) — Implementation decisions and copy map from OmniClaude
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — Starter-pack bucket model and frozen adapter contract
-- [`docs/DEVELOPER.md`](./docs/DEVELOPER.md) — Module mapping and contributor orientation
-- [`docs/STUDENT_GUIDE.md`](./docs/STUDENT_GUIDE.md) — Original capstone project roadmap (historical)
+- [`docs/dev/DEVELOPER.md`](./docs/dev/DEVELOPER.md) — Module mapping and contributor orientation
+- [`docs/dev/STUDENT_GUIDE.md`](./docs/dev/STUDENT_GUIDE.md) — Original capstone project roadmap (historical)

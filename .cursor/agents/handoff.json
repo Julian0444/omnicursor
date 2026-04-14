@@ -37,7 +37,7 @@
   "instructions": [
     "Reuse rule 15-handoff.mdc; keep 00-omninode-concepts and 01-codebase-research as the always-on base.",
     "Call get_agent_context(\"handoff\") then invoke_skill(\"handoff\") and follow the skill verbatim.",
-    "Prefer a dated file under docs/plans/ or docs/handoffs/ so the team HANDOFF.md at repo root is not overwritten.",
+    "Prefer a dated file under docs/plans/ or docs/dev/handoffs/ so docs/dev/HANDOFF.md is not overwritten.",
     "After producing the handoff, run check_compliance(\"handoff\", <brief summary>) on the output."
   ],
   "recommended_skill": "handoff"

@@ -23,7 +23,7 @@ When documents disagree:
 
 1. Actual current codebase behavior
 2. `CLAUDE.md` — repo conventions and architecture overview
-3. `docs/OMNICURSOR_IMPLEMENTATION_BRIEF.md` — implementation decisions
+3. `docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md` — implementation decisions
 4. `omnicursor-team-guidance.md` — Jonah's demo-focused guidance with code examples
 5. `omniclaude-main/` — reference library, never a source of mandatory parity
 
@@ -196,8 +196,8 @@ Paste this as a preamble:
 ```
 Read these files to build working context:
 - CLAUDE.md (conventions and architecture overview)
-- docs/HANDOFF.md (current state and remaining tasks)
-- docs/OMNICURSOR_IMPLEMENTATION_BRIEF.md (implementation decisions)
+- docs/dev/HANDOFF.md (current state and remaining tasks)
+- docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md (implementation decisions)
 - omnicursor-team-guidance.md (Jonah's guidance)
 - .cursor/hooks/on_prompt.py, _common.py, pattern_loader.py, on_shell.py, on_stop.py
 - src/omnicursor/agents.py, compliance.py, skills.py

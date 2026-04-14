@@ -22,7 +22,7 @@
   - `OmniCursor_Architecture_FINALupdated33.docx`
   - `OmniCursor_DoD_Rubric.md`
   - `investigacion_omninode_ClaudeCode.md`
-  - `HANDOFF.md`
+  - `docs/dev/HANDOFF.md`
   - `CLAUDE.md`
 - Reference:
   - `omniclaude/`
@@ -46,7 +46,7 @@
 6. The current failing test is:
    - `tests/test_skills.py::test_available_skills_lists_all`
    - cause: `skills/README.md` is being included by `SkillRepository.available_skills()`
-7. `docs/handoffs/` did not exist before this session. It now exists through this handoff.
+7. `docs/dev/handoffs/` did not exist before this session. It now exists through this handoff.
 
 ## Opinion / Direction
 
@@ -78,7 +78,7 @@ This split reduces the biggest overlap risk:
 ## Files Created This Session
 
 - `OmniCursor_Architecture_FINAL44.docx`
-- `docs/handoffs/2026-04-09-architecture-role-alignment.md`
+- `docs/dev/handoffs/2026-04-09-architecture-role-alignment.md`
 
 ## What Changed in the New Architecture Document
 

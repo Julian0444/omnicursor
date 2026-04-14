@@ -2,7 +2,7 @@
 
 OmniCursor has three layers:
 
-1. **Cursor Rules** (`.cursor/rules/`, 9 `.mdc` files) — behavior surface for routing and interaction
+1. **Cursor Rules** (`.cursor/rules/`, 11 `.mdc` files) — behavior surface for routing and interaction
 2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic, stdlib only, no LLM
 3. **MCP Tools** (`src/omnicursor/server.py`, 3 tools) — FastMCP backend for agent routing, skill loading, and compliance checking
 
@@ -31,7 +31,7 @@ The default transport is `stdio`, which is the right starting point for a local 
 ## Use in Cursor
 
 1. Open the repository root, not a parent folder.
-2. Confirm the 8 rules under `.cursor/rules/` are visible in Cursor Settings.
+2. Confirm the 11 rules under `.cursor/rules/` are visible in Cursor Settings.
 3. Register a local MCP server command that runs `omnicursor-server` from this repo's virtual environment.
 4. Hooks are automatically active via `.cursor/hooks.json` — no extra configuration needed.
 5. Use the rules for brainstorming, planning, ticketing, debugging, PR review, and session handoff.
@@ -49,6 +49,8 @@ Returns routing context (agent name, instructions, recommended skill) for a give
 | `brainstorming` | brainstorming-guide | 10-brainstorming.mdc | brainstorming |
 | `planning` | plan-writer | 11-writing-plans.mdc | writing-plans |
 | `ticketing` | ticket-planner | 12-plan-ticket.mdc | plan-ticket |
+| Linear create (YAML → issue) | — | 16-create-ticket.mdc | create-ticket |
+| Linear consume / close | — | 17-consume-ticket.mdc | consume-ticket |
 | `review` | pr-review | 14-pr-review.mdc | pr-review |
 | `handoff` | handoff-guide | 15-handoff.mdc | handoff |
 
@@ -56,13 +58,13 @@ Unrecognized categories fall back to `omnicursor-generalist`.
 
 ### `invoke_skill(skill_name: str)`
 
-Loads a Markdown skill from the `skills/` directory and returns its content. Available skills: `systematic-debugging`, `brainstorming`, `writing-plans`, `plan-ticket`, `pr-review`, `pr-polish`, `hostile-reviewer`, `defense-in-depth`, `merge-planner`, `insights-to-plan`, `handoff`, `using-git-worktrees`.
+Loads a Markdown skill from the `skills/` directory and returns its content. Includes `consume-ticket` and `create-ticket` (Linear MCP) plus methodology skills: `systematic-debugging`, `brainstorming`, `writing-plans`, `plan-ticket`, `pr-review`, `pr-polish`, `hostile-reviewer`, `defense-in-depth`, `merge-planner`, `insights-to-plan`, `handoff`, `using-git-worktrees`.
 
 ### `check_compliance(skill_name: str, response_summary: str)`
 
-Checks whether a model response complies with a skill's expected output pattern. Returns a checklist with pass/fail for each expected element. All 12 skills have compliance registry entries.
+Checks whether a model response complies with a skill's expected output pattern. Returns a checklist with pass/fail for each expected element. All 14 skills have compliance registry entries.
 
-## Available Skills (12)
+## Available Skills (14)
 
 | Skill | File | Purpose |
 |-------|------|---------|
@@ -70,6 +72,8 @@ Checks whether a model response complies with a skill's expected output pattern.
 | `brainstorming` | `skills/brainstorming.md` | Refine ideas into validated design docs |
 | `writing-plans` | `skills/writing-plans.md` | Design docs into TDD implementation plans |
 | `plan-ticket` | `skills/plan-ticket.md` | Plans into YAML ticket contract templates |
+| `create-ticket` | `skills/create-ticket.md` | YAML / contract → Linear issue via MCP |
+| `consume-ticket` | `skills/consume-ticket.md` | Linear intake **or** mark done (`save_comment` + `save_issue`) |
 | `pr-review` | `skills/pr-review.md` | Severity-classified PR review with merge readiness verdict |
 | `pr-polish` | `skills/pr-polish.md` | Three-phase PR refinement to merge-ready state |
 | `hostile-reviewer` | `skills/hostile-reviewer.md` | Adversarial code review with iterative convergence |
@@ -82,6 +86,8 @@ Checks whether a model response complies with a skill's expected output pattern.
 ## End-to-End Flow in Cursor
 
 A typical session using all three MCP tools:
+
+0. **Optional — Linear bookends:** **`@17-consume-ticket`** at start → `get_issue` → intake → `@11` / `@13`. When work is done, **`@17-consume-ticket`** again → user confirms AC → `save_comment` + `save_issue` (Done) → re-fetch to verify.
 
 1. **User invokes `@10-brainstorming` with an idea.**
    - Rule calls `get_agent_context("brainstorming")` for routing context.
@@ -101,7 +107,11 @@ A typical session using all three MCP tools:
    - Deterministic repo detection runs. YAML ticket template generated.
    - Rule calls `check_compliance("plan-ticket", summary)` to verify.
 
-**External systems (Linear, Kafka, etc.):** not covered by a Cursor rule in this repo — use your tracker / MCP outside OmniCursor, or read `docs/ARCHITECTURE.md` for the conceptual Bucket 3 contract.
+4. **Optional — user invokes `@16-create-ticket`** with the YAML (or `invoke_skill("create-ticket")`).
+   - Follow the skill: read Linear MCP tool schemas, then `save_issue` (or equivalent) to create the issue.
+   - Rule calls `check_compliance("create-ticket", summary)` after creation or dry-run.
+
+**Other external systems (Kafka, full ONEX runtime, etc.):** not in this repo’s scope — see `docs/ARCHITECTURE.md`. **Linear** is supported when Cursor’s Linear MCP is enabled (`16-create-ticket` / `create-ticket`, and `17-consume-ticket` / `consume-ticket`).
 
 ## Hooks
 
@@ -149,5 +159,5 @@ echo '{"conversation_id": "test-123", "status": "completed"}' | python3 .cursor/
 
 ## Notes
 
-- [`docs/HOW_TO_RUN_IN_CURSOR.md`](./HOW_TO_RUN_IN_CURSOR.md) is preserved as the original starter-kit walkthrough.
+- [`docs/dev/HOW_TO_RUN_IN_CURSOR.md`](./dev/HOW_TO_RUN_IN_CURSOR.md) is preserved as the original starter-kit walkthrough.
 - [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) remains the bucket and adapter contract reference.

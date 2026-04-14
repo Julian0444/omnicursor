@@ -16,6 +16,6 @@ OmniCursor **behavior surface** for the model. Rules `00` and `01` are **always 
 
 **MCP:** Many rules assume OmniCursor server tools (`get_agent_context`, `invoke_skill`, `check_compliance`). See [docs/QUICKSTART.md](../../docs/QUICKSTART.md).
 
-**Teaching / capstone:** [docs/STUDENT_GUIDE.md](../../docs/STUDENT_GUIDE.md), [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) (bucket model; Bucket 3 is conceptual — no `adapter-stub` rule in this repo).
+**Teaching / capstone:** [docs/dev/STUDENT_GUIDE.md](../../docs/dev/STUDENT_GUIDE.md), [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) (bucket model; Bucket 3 is conceptual — no `adapter-stub` rule in this repo).
 
 **Tests:** Prompts under [`../../tests/prompts/`](../../tests/prompts/), rubrics under [`../../tests/rubrics/`](../../tests/rubrics/).

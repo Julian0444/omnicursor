@@ -1,6 +1,6 @@
 # Phase 3A — Historical Summary
 
-> **Note**: This is a historical snapshot from the start of Phase 3A planning. The implementation described in the plan below has been **fully completed**. For current state, see [`docs/HANDOFF.md`](./HANDOFF.md) and [`CLAUDE.md`](../CLAUDE.md).
+> **Note**: This is a historical snapshot from the start of Phase 3A planning. The implementation described in the plan below has been **fully completed**. For current state, see [`HANDOFF.md`](./HANDOFF.md) and [`CLAUDE.md`](../../CLAUDE.md).
 
 ---
 

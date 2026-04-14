@@ -11,11 +11,11 @@ These existing files were reviewed and intentionally preserved as the architectu
 - [`.cursor/rules/11-writing-plans.mdc`](../.cursor/rules/11-writing-plans.mdc): design-to-plan methodology
 - [`.cursor/rules/12-plan-ticket.mdc`](../.cursor/rules/12-plan-ticket.mdc): bounded repo detection and YAML ticket template generation
 - [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md): frozen adapter contract and bucket rules (starter-pack artifact; Bucket 3 operational rules are not shipped in this repo)
-- [`docs/STUDENT_GUIDE.md`](./STUDENT_GUIDE.md): capstone execution and grading flow (starter-pack artifact)
-- [`docs/SKILL_TRANSLATION_TEMPLATE.md`](./SKILL_TRANSLATION_TEMPLATE.md): rule-porting template (starter-pack artifact)
+- [`STUDENT_GUIDE.md`](./STUDENT_GUIDE.md): capstone execution and grading flow (starter-pack artifact)
+- [`SKILL_TRANSLATION_TEMPLATE.md`](./SKILL_TRANSLATION_TEMPLATE.md): rule-porting template (starter-pack artifact)
 - [`tests/prompts`](../tests/prompts): prompt fixtures for rule behavior
 - [`tests/rubrics`](../tests/rubrics): pass/fail criteria for the preserved rules
-- [`docs/HOW_TO_RUN_IN_CURSOR.md`](./HOW_TO_RUN_IN_CURSOR.md): original starter-pack setup instructions (historical — see note below)
+- [`HOW_TO_RUN_IN_CURSOR.md`](./HOW_TO_RUN_IN_CURSOR.md): original starter-pack setup instructions (historical — see note below)
 - [`OMNICLAUDE_SKILLS.md`](../OMNICLAUDE_SKILLS.md): skill inventory to mine for future ports
 
 **OmniCursor extensions (not starter-pack originals):**
@@ -94,6 +94,6 @@ For non-debug flows, the preserved rules continue to be the primary execution la
 These files are preserved as starter-pack / capstone artifacts. They describe the original assignment scope and may not fully reflect the current implementation:
 
 - `docs/ARCHITECTURE.md` — bucket model and frozen adapter contract (still accurate for its scope)
-- `docs/STUDENT_GUIDE.md` — 6-phase capstone execution plan
-- `docs/SKILL_TRANSLATION_TEMPLATE.md` — rule-porting template
-- `docs/HOW_TO_RUN_IN_CURSOR.md` — original setup instructions (references `cursor-omninode/` folder name and pre-hooks state; see `docs/QUICKSTART.md` for current setup)
+- `STUDENT_GUIDE.md` — 6-phase capstone execution plan
+- `SKILL_TRANSLATION_TEMPLATE.md` — rule-porting template
+- `HOW_TO_RUN_IN_CURSOR.md` — original setup instructions (references `cursor-omninode/` folder name and pre-hooks state; see [`docs/QUICKSTART.md`](../QUICKSTART.md) for current setup)
