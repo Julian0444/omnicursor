@@ -1,5 +1,5 @@
 ---
-description: Activates when the user wants a session handoff, session summary, context for the next chat, or to capture remaining work and blockers before stopping. Uses OmniCursor MCP tools without replacing the preserved starter-kit rules.
+description: Activates when the user wants a session handoff, session summary, context for the next chat, or to capture remaining work and blockers before stopping. Uses OmniCursor hooks and file-backed skills.
 globs:
 alwaysApply: false
 ---
@@ -14,9 +14,9 @@ It does not replace `00-omninode-concepts`, `01-codebase-research`, `02-no-secre
 ## Routing Contract
 
 1. Self-classify the request as **`handoff`** (aliases: `session-handoff`, `continuity`).
-2. Call MCP tool **`get_agent_context`** with `category="handoff"`.
-3. Call MCP tool **`invoke_skill`** with `skill_name="handoff"`.
-4. Call **`check_compliance`** with `skill_name="handoff"` and a brief summary of the handoff document.
+2. Prefer hook-injected routing when present.
+3. Read **`skills/handoff.md`** at the repository root and follow it.
+4. Optionally run compliance checks for **`handoff`** via `src/omnicursor/compliance.py`.
 
 ## Working Style
 

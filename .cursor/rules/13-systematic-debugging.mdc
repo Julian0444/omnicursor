@@ -1,5 +1,5 @@
 ---
-description: Activates when the user asks to debug, investigate a failure, find a root cause, fix a regression, inspect a traceback, or work through a flaky test. Uses OmniCursor MCP tools without replacing the preserved starter-kit rules.
+description: Activates when the user asks to debug, investigate a failure, find a root cause, fix a regression, inspect a traceback, or work through a flaky test. Uses OmniCursor hooks and file-backed skills.
 globs:
 alwaysApply: false
 ---
@@ -13,13 +13,10 @@ It does not replace `00-omninode-concepts`, `01-codebase-research`, `02-no-secre
 
 ## Routing Contract
 
-Cursor has no `UserPromptSubmit` or `PreToolUse` hook.
-Approximate routing like this:
-
-1. Self-classify the request as `debugging`
-2. Call MCP tool `get_agent_context` with `category="debugging"`
-3. If the returned `recommended_skill` is non-null, call MCP tool `invoke_skill`
-4. Follow the returned instructions and loaded skill content
+1. Self-classify the request as **`debugging`**.
+2. Prefer the **`beforeSubmitPrompt`** hook output when present: the model context may include `<!-- OmniCursor Agent: ...` with the selected agent and confidence.
+3. Read the full methodology from **`skills/systematic-debugging.md`** at the repository root (use the Read tool on that path).
+4. For the same structured routing document the test suite uses, see category **`debugging`** in `src/omnicursor/agents.py` (`get_agent_context` in Python — optional).
 
 ## Working Style
 

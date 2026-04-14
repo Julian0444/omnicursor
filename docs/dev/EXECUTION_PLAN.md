@@ -4,17 +4,17 @@
 
 ## Completed Phases
 
-### Phase 1 — MCP Skeleton (complete)
+### Phase 1 — Python package skeleton (complete)
 
 1. Preserved and rooted the starter-kit rules, docs, prompts, and rubrics
-2. Added the MCP package skeleton under `src/omnicursor/`
+2. Added the package skeleton under `src/omnicursor/`
 3. Implemented routing context (`agents.py`) and skill loading (`skills.py`)
 4. Added the debugging skill and its rule (`13-systematic-debugging.mdc`)
 5. Verified basic imports, tests, and run docs
 
-### Phase 2 — MCP Tools (complete)
+### Phase 2 — Library modules (complete)
 
-1. Added `check_compliance` as a real MCP tool with keyword-based registry
+1. Added `check_compliance` with keyword-based registry
 2. Added `patterns.py` as a static pattern catalog for preserved rules
 3. Ported brainstorming, writing-plans, and plan-ticket as `skills/*.md` (plus additional methodology skills; `adapter-stub` removed from tree)
 4. Added 16 agent JSON configs in `.cursor/agents/`
@@ -38,11 +38,11 @@
 - 120 tests passing
 - `ruff check` clean across `src/`, `tests/`, `.cursor/hooks/`
 - All hook smoke tests pass
-- MCP server imports cleanly
+- Library imports cleanly
 
 ## What Remains (not yet started)
 
-- `store_pattern` MCP tool — enables writing new patterns from sessions
+- Pattern-append UX — enables writing new patterns from sessions
 - Seed `~/.omnicursor/learned_patterns.json` — starter patterns for demo
 - Valkey/PostgreSQL integration — future performance upgrade, not needed for MVP
 - `beforeMCPExecution` / `beforeReadFile` hooks — deferred (Phase 3B)

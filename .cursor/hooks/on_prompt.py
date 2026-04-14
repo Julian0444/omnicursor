@@ -1,5 +1,8 @@
 """beforeSubmitPrompt hook — classify prompt and emit enrichment payload.
 
+Node contract: ``node_cursor_prompt_orchestrator``
+(``src/omnicursor/nodes/node_cursor_prompt_orchestrator/contract.yaml``).
+
 Classifies the user prompt against agent configs, selects the best-match
 agent, and writes a ``{"systemMessage": ...}`` JSON payload to stdout
 containing the agent name, confidence score, and routing reason.

@@ -1,4 +1,4 @@
-"""Pydantic schemas used by the OmniCursor MCP server."""
+"""Pydantic schemas for the OmniCursor Python library (agents, skills, compliance)."""
 
 from __future__ import annotations
 

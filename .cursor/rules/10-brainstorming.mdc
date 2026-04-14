@@ -106,12 +106,8 @@ Replace `YYYY-MM-DD` with the actual date and `<topic>` with the actual slug use
 
 ---
 
-## MCP Integration (Optional)
+## OmniCursor backend (library + files)
 
-When the OmniCursor MCP server is available, enhance this rule with structured backend support:
-
-1. **At the start of the session**, call `get_agent_context` with `category="brainstorming"` to receive routing instructions and the recommended skill name.
-2. **If deeper methodology is needed**, call `invoke_skill` with `skill_name="brainstorming"` to load the full skill workflow document.
-3. **After producing the final design**, call `check_compliance` with `skill_name="brainstorming"` and a summary of what was produced. Review any missing checks and address them before handing off.
-
-These MCP calls are optional enhancements. The rule works without them — the preserved methodology above is the primary workflow.
+1. Prefer hook-injected routing when present.
+2. Read **`skills/brainstorming.md`** for the full methodology.
+3. Optional: `get_agent_context` / `check_compliance` in `src/omnicursor/` for tests and scripting only.

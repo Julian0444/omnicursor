@@ -1,9 +1,7 @@
-# Source tree
+# `src/` — installable package
 
 | Path | Purpose |
 |------|---------|
-| [`omnicursor/`](./omnicursor/) | Installable Python package — FastMCP server, agents, skills, compliance. |
+| [`omnicursor/`](./omnicursor/) | Python library: agents, skills, compliance, node contracts. |
 
-**Install:** `pip install -e ".[dev]"` from repo root (see [pyproject.toml](../pyproject.toml)).
-
-**Entry point:** Console script `omnicursor-server` → `omnicursor.server:main`.
+Install from the repo root: `pip install -e ".[dev]"` then run `pytest tests/`.

@@ -135,12 +135,8 @@ After outputting the template:
 
 ---
 
-## MCP Integration (Optional)
+## OmniCursor backend (library + files)
 
-When the OmniCursor MCP server is available, enhance this rule with structured backend support:
-
-1. **At the start of the session**, call `get_agent_context` with `category="ticketing"` to receive routing instructions and the recommended skill name.
-2. **If deeper methodology is needed**, call `invoke_skill` with `skill_name="plan-ticket"` to load the full skill workflow document.
-3. **After producing the ticket template**, call `check_compliance` with `skill_name="plan-ticket"` and a summary of what was produced. Review any missing checks and address them before handing off.
-
-These MCP calls are optional enhancements. The rule works without them — the preserved methodology above is the primary workflow.
+1. Prefer hook-injected routing (`beforeSubmitPrompt`) when present.
+2. Read **`skills/plan-ticket.md`** for the full methodology.
+3. Optional: structured routing and compliance live in `src/omnicursor/agents.py` and `src/omnicursor/compliance.py` for tests and scripting.

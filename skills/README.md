@@ -1,6 +1,6 @@
 # Markdown skills
 
-Each file is human-readable skill content loaded by the MCP tool **`invoke_skill`** via `src/omnicursor/skills.py`. Names here match tool arguments (e.g. `brainstorming`, `plan-ticket`).
+Each file is human-readable skill content. The model reads these paths from Cursor rules; `src/omnicursor/skills.py` loads the same files for tests. Names match library arguments (e.g. `brainstorming`, `plan-ticket`).
 
 **Compliance:** `check_compliance` uses `src/omnicursor/compliance.py` — add registry entries when you add skills that need automated checks.
 

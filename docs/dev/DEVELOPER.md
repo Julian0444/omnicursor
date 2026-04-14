@@ -20,12 +20,12 @@ These existing files were reviewed and intentionally preserved as the architectu
 
 **OmniCursor extensions (not starter-pack originals):**
 
-- [`.cursor/rules/14-pr-review.mdc`](../.cursor/rules/14-pr-review.mdc): PR / merge-readiness methodology + MCP (`review` → `pr-review` skill)
-- [`.cursor/rules/15-handoff.mdc`](../.cursor/rules/15-handoff.mdc): session handoff methodology + MCP (`handoff` category → `handoff` skill)
+- [`.cursor/rules/14-pr-review.mdc`](../.cursor/rules/14-pr-review.mdc): PR / merge-readiness (`review` → `skills/pr-review.md`)
+- [`.cursor/rules/15-handoff.mdc`](../.cursor/rules/15-handoff.mdc): session handoff (`handoff` → `skills/handoff.md`)
 
-## Three-Layer Architecture
+## Architecture (rules + hooks + library)
 
-OmniCursor extends the starter kit with two additional layers:
+OmniCursor extends the starter kit with **hooks** and a **Python library**:
 
 ### Layer 1: Cursor Rules (preserved)
 
@@ -44,44 +44,37 @@ The preserved rules stay as the top-level behavior layer inside Cursor. Rules `0
 | `_common.py` | (shared) | Path constants, stdin/stdout helpers, event logging, agent config loading |
 | `pattern_loader.py` | (library) | Thread-safe in-memory pattern cache, loads from `~/.omnicursor/learned_patterns.json` |
 
-### Layer 3: MCP Tools (`src/omnicursor/`)
+### Layer 3: Python library (`src/omnicursor/`)
 
-FastMCP backend providing structured capabilities that rules can call.
+Structured helpers for **tests**, **CI**, and optional scripting.
 
 | Module | Purpose |
 |--------|---------|
-| `server.py` | FastMCP server with 3 tools: `get_agent_context`, `invoke_skill`, `check_compliance` |
-| `agents.py` | Agent routing with three-strategy scoring (exact/fuzzy/keyword), `HARD_FLOOR = 0.55`, dynamic JSON loading from `.cursor/agents/*.json`, backward-compatible `get_agent_context(category)` |
-| `skills.py` | Auto-discovers and loads Markdown skills from `skills/` (12 skills) |
-| `compliance.py` | Keyword-based compliance registry with 3–5 checks per skill (12 skills) |
+| `agents.py` | Agent routing with three-strategy scoring (exact/fuzzy/keyword), `HARD_FLOOR = 0.55`, dynamic JSON loading from `.cursor/agents/*.json`, `get_agent_context(category)` |
+| `skills.py` | Auto-discovers and loads Markdown skills from `skills/` |
+| `compliance.py` | Keyword-based compliance registry with 3–5 checks per skill |
+| `node_contracts.py` | Cursor-native node `contract.yaml` validation |
 | `schemas.py` | Pydantic v2 models: `AgentContext`, `SkillDocument`, `ComplianceResult`, `PatternRecord`, `DatabaseStatus` |
 | `patterns.py` | Lists 4 preserved rules as `PatternRecord` objects (static) |
 | `db.py` | Repo paths (`REPO_ROOT`, `SKILLS_DIR`, `RULES_DIR`) and `InMemoryDatabase` placeholder |
 
 ## How Agent Routing Works
 
-Routing uses identical three-strategy scoring in both `on_prompt.py` (hooks layer) and `agents.py` (MCP layer):
+Routing uses identical three-strategy scoring in both `on_prompt.py` (hooks) and `agents.py` (library):
 
 1. **Exact substring match** on `explicit_triggers` → 0.95, `context_triggers` → 0.80
 2. **Fuzzy match** via `SequenceMatcher` with length-aware thresholds
 3. **Keyword overlap** on `activation_keywords` → scaled 0.55–0.85
 
-`HARD_FLOOR = 0.55` discards weak candidates. No match falls back to `polymorphic-agent` (hooks) or `omnicursor-generalist` (MCP).
+`HARD_FLOOR = 0.55` discards weak candidates. No match falls back to `polymorphic-agent` (hooks) or `omnicursor-generalist` (library default context).
 
 Agent definitions are loaded dynamically from `.cursor/agents/*.json` (16 configs). Each config has: `name`, `description`, `category`, `activation_patterns` (with `explicit_triggers`, `context_triggers`, `activation_keywords`), `instructions`, `recommended_skill`.
 
-## How `get_agent_context` Integrates With Existing Rules
+## How routing integrates with rules
 
-`get_agent_context` is not a second routing system. It is a small MCP helper that a rule can call after self-classifying the request.
+Hooks attempt **automatic** classification via `beforeSubmitPrompt`. Rules instruct the model to **read** `skills/<name>.md` and to use hook `systemMessage` hints when present.
 
-For example:
-
-- `13-systematic-debugging.mdc` classifies a debugging request as `debugging`
-- it calls `get_agent_context("debugging")`
-- it then calls `invoke_skill("systematic-debugging")`
-- the always-on preserved rules still provide vocabulary and bounded research constraints
-
-For non-debug flows, the preserved rules continue to be the primary execution layer.
+`get_agent_context(category)` in `agents.py` is the **test/CI** view of the same routing metadata — not a second routing system in the IDE. For example, `13-systematic-debugging.mdc` tells the model to read `skills/systematic-debugging.md` after self-classifying as debugging.
 
 ## Adding New Components
 

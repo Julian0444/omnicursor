@@ -1,5 +1,8 @@
 """stop hook — aggregate session events and write summary.
 
+Node contract: ``node_cursor_session_outcome_orchestrator``
+(``src/omnicursor/nodes/node_cursor_session_outcome_orchestrator/contract.yaml``).
+
 Informational only — Cursor ignores stdout.
 """
 

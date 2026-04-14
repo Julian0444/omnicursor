@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2025 OmniNode.ai Inc.
+# SPDX-License-Identifier: MIT
+# OmniCursor node contract — Cursor-native analogue of OmniClaude skill orchestrators.
+# Implementation: .cursor/hooks/on_prompt.py (stdlib only; must not import omnicursor).
+
+name: node_cursor_prompt_orchestrator
+contract_name: node_cursor_prompt_orchestrator
+node_name: node_cursor_prompt_orchestrator
+
+contract_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_type: ORCHESTRATOR_GENERIC
+
+description: >
+  Classifies the user prompt against agent configs, emits systemMessage JSON to stdout,
+  and injects learned patterns. Cursor-native substitute for bus-dispatched skill routing.
+
+cursor_native:
+  hook_event: beforeSubmitPrompt
+  hooks_json_command: "python3 .cursor/hooks/on_prompt.py"
+  implementation: .cursor/hooks/on_prompt.py
+  blocking: false
+
+execution:
+  backend: cursor_ide
+  notes: Deterministic hook; no LLM inside the hook process.
+
+local_event_bus:
+  kind: append_only_jsonl
+  path: "~/.omnicursor/events.jsonl"
+  description: >
+    Optional telemetry from _common.log_event; not a Kafka topic.
+
+capabilities:
+  - name: cursor.prompt_classification
+    description: Merge-layer agent scoring + systemMessage emission
+    version: 1.0.0
+
+metadata:
+  license: MIT
+  parity_reference: omniclaude shared routing / UserPromptSubmit hooks
+  tags:
+    - orchestrator
+    - cursor
+    - beforeSubmitPrompt

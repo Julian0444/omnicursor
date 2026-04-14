@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: 2025 OmniNode.ai Inc.
+# SPDX-License-Identifier: MIT
+
+name: node_cursor_file_edit_effect
+contract_name: node_cursor_file_edit_effect
+node_name: node_cursor_file_edit_effect
+
+contract_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_type: EFFECT_POST_EDIT
+
+description: >
+  Post-edit diagnostics (e.g. ruff check on Python) and event logging. Does not modify files.
+
+cursor_native:
+  hook_event: afterFileEdit
+  hooks_json_command: "python3 .cursor/hooks/on_edit.py"
+  implementation: .cursor/hooks/on_edit.py
+  blocking: false
+
+execution:
+  backend: cursor_ide
+
+local_event_bus:
+  kind: append_only_jsonl
+  path: "~/.omnicursor/events.jsonl"
+
+capabilities:
+  - name: cursor.edit_diagnostics
+    description: Read-only lint signal after file edits
+    version: 1.0.0
+
+metadata:
+  license: MIT
+  tags:
+    - effect
+    - cursor
+    - afterFileEdit

@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2025 OmniNode.ai Inc.
+# SPDX-License-Identifier: MIT
+
+name: node_cursor_session_outcome_orchestrator
+contract_name: node_cursor_session_outcome_orchestrator
+node_name: node_cursor_session_outcome_orchestrator
+
+contract_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_type: ORCHESTRATOR_GENERIC
+
+description: >
+  Session stop / outcome aggregation (4-gate classification) and persistence.
+  Approximates OmniClaude session-end / telemetry reducers in a Cursor-native way.
+
+cursor_native:
+  hook_event: stop
+  hooks_json_command: "python3 .cursor/hooks/on_stop.py"
+  implementation: .cursor/hooks/on_stop.py
+  blocking: false
+
+execution:
+  backend: cursor_ide
+
+local_event_bus:
+  kind: append_only_jsonl
+  path: "~/.omnicursor/events.jsonl"
+
+capabilities:
+  - name: cursor.session_outcome
+    description: Derive session outcome from stop payload and prior events
+    version: 1.0.0
+
+metadata:
+  license: MIT
+  parity_reference: omniclaude stop / session outcome subscribers
+  tags:
+    - orchestrator
+    - cursor
+    - stop

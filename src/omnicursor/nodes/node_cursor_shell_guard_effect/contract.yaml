@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2025 OmniNode.ai Inc.
+# SPDX-License-Identifier: MIT
+
+name: node_cursor_shell_guard_effect
+contract_name: node_cursor_shell_guard_effect
+node_name: node_cursor_shell_guard_effect
+
+contract_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_version:
+  major: 1
+  minor: 0
+  patch: 0
+
+node_type: EFFECT_GUARD
+
+description: >
+  Two-tier shell guard (hard deny + soft warn). Only OmniCursor hook surface that can
+  block execution via permission deny.
+
+cursor_native:
+  hook_event: beforeShellExecution
+  hooks_json_command: "python3 .cursor/hooks/on_shell.py"
+  implementation: .cursor/hooks/on_shell.py
+  blocking: true
+
+execution:
+  backend: cursor_ide
+
+local_event_bus:
+  kind: append_only_jsonl
+  path: "~/.omnicursor/events.jsonl"
+
+capabilities:
+  - name: cursor.shell_policy
+    description: Pattern-based allow/deny for terminal commands
+    version: 1.0.0
+
+metadata:
+  license: MIT
+  tags:
+    - effect
+    - cursor
+    - beforeShellExecution

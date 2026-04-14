@@ -1,4 +1,4 @@
-"""Routing contexts used by the OmniCursor MCP tools."""
+"""Agent routing contexts for OmniCursor (library + tests; hooks mirror scoring separately)."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ DEFAULT_CONTEXT = AgentContext(
     description="General-purpose fallback agent for unmatched categories.",
     instructions=[
         "Prefer the preserved Cursor rules before inventing a new workflow.",
-        "Use MCP tools only to add routing context or load a local skill.",
+        "Read skills under skills/ when needed; use hook routing hints when present.",
         "Check 00-omninode-concepts for shared vocabulary.",
     ],
     recommended_skill=None,

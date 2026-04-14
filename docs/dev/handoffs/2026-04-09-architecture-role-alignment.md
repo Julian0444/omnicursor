@@ -12,7 +12,7 @@
   - `.cursor/hooks/on_shell.py`
   - `.cursor/hooks/on_stop.py`
   - `.cursor/hooks/pattern_loader.py`
-  - `src/omnicursor/server.py`
+  - `src/omnicursor/` (Python library)
   - `src/omnicursor/agents.py`
   - `src/omnicursor/compliance.py`
   - `src/omnicursor/skills.py`
@@ -33,7 +33,7 @@
 2. The repo has a real three-layer system:
    - Rules
    - Hooks
-   - MCP
+   - Python library
 3. The next bottlenecks are not "discovering the architecture" anymore. They are:
    - runtime proof in real Cursor
    - CI/CD automation
@@ -57,7 +57,7 @@ The team split is good, but only if the boundaries stay explicit:
   - green baseline
   - test/lint/docs verification on push
 - **Andy** owns the OmniCursor backend and Cursor connection story:
-  - MCP server
+  - Python library (`src/omnicursor/`) + hooks/rules integration
   - agent registry
   - routing
   - research on how Cursor-side agents or future plugin surfaces can connect
@@ -103,7 +103,7 @@ The new document keeps the existing structure/style but updates the content to r
 
 ### Andy
 
-- Harden `src/omnicursor/server.py` and `src/omnicursor/agents.py`
+- Harden `src/omnicursor/agents.py` (and related library modules)
 - Clarify whether "Cursor plugin" is a real near-term path or just a research track
 - Document how OmniCursor should connect to Cursor agents/configs without assuming unsupported APIs
 

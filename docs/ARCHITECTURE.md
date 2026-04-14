@@ -1,12 +1,24 @@
-# Architecture — OmniNode Cursor Starter Pack
+# Architecture — OmniCursor + starter-pack invariants
 
-This document defines the architectural invariants for the starter pack. Students implementing
-rules must conform to all specifications here. The frozen adapter contract in particular is
-non-negotiable — deviations produce non-conformant rubric results.
+This file serves **two roles**:
+
+1. **OmniCursor product shape (current repo)** — how the IDE integration is structured.
+2. **Starter-pack / capstone invariants** — the 3-bucket model, frozen HTTP adapter contract, repo detection, and handoff rules below. Those sections are still authoritative for rubric conformance where applicable.
+
+## OmniCursor runtime (summary)
+
+| Layer | Location | Role |
+|--------|-----------|------|
+| **Rules** | `.cursor/rules/*.mdc` | Behavior and methodology; model reads `skills/*.md` by path. |
+| **Hooks** | `.cursor/hooks.json`, `.cursor/hooks/*.py` | Deterministic lifecycle (prompt routing hint, shell guard, edit lint signal, session outcome). Hook code is **stdlib only** and does not import `omnicursor`. |
+| **Skills** | `skills/*.md` | Methodology documents on disk. |
+| **Library** | `src/omnicursor/` | `agents`, `skills` loader, `compliance`, `node_contracts` — for **tests, CI, and optional scripting**; optional integration with the wider OmniNode stack via HTTP/subprocess/Kafka is described in [`dev/OMNICURSOR_SYSTEM_DESIGN.md`](./dev/OMNICURSOR_SYSTEM_DESIGN.md). |
+
+Optional integrations (e.g. Linear) use Cursor’s MCP and rules as documented in the repo. Deeper developer notes: [`dev/README.md`](./dev/README.md), [`../CLAUDE.md`](../CLAUDE.md).
 
 ---
 
-## 3-Bucket Classification
+## 3-Bucket Classification (starter-pack invariants)
 
 ### Classification Rule (one sentence per bucket)
 

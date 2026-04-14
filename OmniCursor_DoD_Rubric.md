@@ -19,35 +19,33 @@ Grade on understanding, not on parity with omniclaude. The real system has 80+ s
 
 ## 1. Layer Separation
 
-**Concept being tested**: Rules, hooks, and tools serve different purposes. Rules shape
-knowledge (always-on context). Hooks shape behavior (automatic lifecycle actions). Tools
-provide capabilities (explicitly invoked). Mixing these layers creates fragile systems.
+**Concept being tested**: Rules, hooks, and **file-backed / library** artifacts serve different purposes. Rules shape
+knowledge (always-on context). Hooks shape behavior (automatic lifecycle actions). **Skills**
+and the **Python library** provide methodology text and machine-checkable checks in CI and tests.
+Mixing these layers creates fragile systems.
 
 ### Verification
 
-- [ ] **Demo a prompt that hits all three layers in sequence.** Show the Cursor window.
+- [ ] **Demo a prompt that hits rules, hooks, and a skill in sequence.** Show the Cursor window.
   Type a prompt. Point to: (a) which rule injected background knowledge, (b) which hook
-  fired automatically before the prompt reached the model, (c) which MCP tool the model
-  called explicitly. If you can't trace all three, you don't have three layers — you have
-  one layer wearing three hats.
+  fired automatically before the prompt reached the model, (c) which **`skills/*.md`** file
+  the model read for methodology. If you can't trace all three, the story is incomplete.
 
-- [ ] **Remove one layer and show what degrades.** Disable hooks (rename hooks.json).
-  Run the same prompt. What changed? The model should still work (rules + MCP still
-  function) but automatic routing and compliance should disappear. If nothing changes,
-  the hooks weren't doing real work.
+- [ ] **Remove one layer and show what degrades.** Disable hooks (rename `hooks.json`).
+  Run the same prompt. What changed? Rules + skills should still work, but automatic routing,
+  shell guard, and edit-time signals should disappear. If nothing changes, the hooks weren't doing real work.
 
-- [ ] **Explain why the hook can't replace the MCP tool (or vice versa).** Specific
-  example: why does `get_agent_context` exist as an MCP tool when `on_prompt.py` already
-  does routing? Answer should involve "manual override" or "the model needs to explicitly
-  request a different agent mid-conversation." If the answer is "redundancy" — wrong.
+- [ ] **Explain why the hook can't replace reading a skill file (or vice versa).** Specific
+  example: why does `on_prompt.py` emit routing hints when the model could open `skills/` directly?
+  Answer should involve **automatic** infrastructure vs **explicit** methodology content.
 
 ---
 
 ## 2. Automatic Routing
 
 **Concept being tested**: The system should route prompts to specialized agents without
-the user or the model having to ask. This is the difference between "the LLM calls a tool
-to figure out what to do" and "the infrastructure already decided before the LLM saw the
+the user or the model having to ask. This is the difference between "the LLM reads a file
+to figure out what persona to use" and "the infrastructure already decided before the LLM saw the
 prompt."
 
 ### Verification
@@ -69,17 +67,17 @@ prompt."
   answer. Hallucinating a match is the wrong answer.
 
 - [ ] **Show that routing happens before the model sees the prompt.** The `systemMessage`
-  injection should be visible in Cursor's context or logs. If routing only happens when
-  the model calls `get_agent_context`, that's Layer 3 (MCP), not Layer 2 (hooks) — and
-  the whole architectural distinction collapses.
+  injection should be visible in Cursor's context or logs. If routing only happens after
+  the model opens `agents.py` or a skill file, that is **not** automatic hook routing — and
+  the architectural distinction collapses.
 
 ---
 
 ## 3. Compliance as Behavior, Not Policy
 
-**Concept being tested**: Compliance checks should happen automatically, not because
-someone remembered to call a tool. A compliance system that only works when the LLM
-opts in is a suggestion, not a guardrail.
+**Concept being tested**: Compliance checks should happen automatically where possible, not only
+because someone remembered to run a script. **Hooks** own on-save signals; the **library**
+owns checklist logic for tests and rubrics.
 
 ### Verification
 
@@ -96,6 +94,9 @@ opts in is a suggestion, not a guardrail.
   Answer should involve "you lint the output, not the input" and "the prompt hasn't
   produced code yet when beforeSubmitPrompt fires." If the answer is "we just picked
   one" — that's a miss on understanding lifecycle ordering.
+
+- [ ] **Show `check_compliance` used in CI or pytest** for at least one skill — proves the
+  library is more than dead code.
 
 ---
 
@@ -133,8 +134,8 @@ This is fundamentally different from a traditional API or library.
 ### Verification
 
 - [ ] **Pick any ported skill and walk through how it changes the model's behavior.**
-  Load `systematic-debugging` via MCP. Show a debugging prompt before and after
-  loading the skill. The model's approach should visibly change — it should follow the
+  Open `skills/systematic-debugging.md` (or another skill). Show a debugging prompt before and after
+  the model follows the skill. The model's approach should visibly change — it should follow the
   skill's methodology (e.g., "reproduce first, then trace, then hypothesize") rather
   than just jumping to a fix.
 
@@ -145,8 +146,7 @@ This is fundamentally different from a traditional API or library.
 
 - [ ] **Identify one skill that would NOT port well from omniclaude and explain why.**
   Good answers: deploy-local-plugin (requires Claude Code's plugin system),
-  merge-sweep (requires GitHub MCP + org-level access), autopilot (requires headless
-  `claude -p`). The point is understanding which skills are methodology-portable and
+  merge-sweep (requires GitHub MCP + org-level access), autopilot (requires headless `claude -p`). The point is understanding which skills are methodology-portable and
   which are infrastructure-bound.
 
 ---
@@ -158,30 +158,27 @@ not just *what* they built?
 
 ### Verification (pick any 3)
 
-- [ ] **Why three layers instead of one?** Bad answer: "separation of concerns."
-  Good answer: "Rules are always loaded — zero-cost, but you can't make decisions with
-  them. Hooks fire automatically but can't do complex multi-step work. MCP tools are
-  powerful but only fire when the model decides to call them. Each layer has a different
-  reliability-vs-capability trade-off."
+- [ ] **Why separate rules, hooks, and skills instead of one big prompt?** Good answer:
+  different **reliability and timing** — rules are always loaded; hooks run deterministically
+  without the model; skills are long-form methodology loaded on demand from disk.
 
-- [ ] **What happens if Cursor drops hook support in v1.8?** Good answer: "We fall
-  back to Phases 1-2 — rules + MCP still work. Routing becomes passive (model calls
-  `get_agent_context` instead of `on_prompt.py` doing it automatically). Compliance
-  becomes opt-in instead of automatic. The system degrades gracefully, it doesn't break."
+- [ ] **What happens if Cursor drops hook support in a future release?** Good answer: "We fall
+  back to rules + skills; routing becomes manual or prompt-driven; automatic guardrails
+  (shell, edit lint) are lost unless reimplemented elsewhere."
 
 - [ ] **Why is the routing confidence floor 0.55 and not 0.80?** Good answer involves
   balancing false positives (routing to wrong agent) vs false negatives (falling through
   to generic agent too often). The number itself doesn't matter — understanding that
   it's a tunable trade-off does.
 
-- [ ] **Why does omniclaude have 80+ skills but you only ported 13?** Good answer:
-  "Most omniclaude skills depend on infrastructure we don't have — Kafka, Linear MCP,
-  Docker runtime, multi-repo worktrees. We ported the methodology-only skills that
+- [ ] **Why does omniclaude have 80+ skills but you only ported a subset?** Good answer:
+  "Most omniclaude skills depend on infrastructure we don't have — Kafka, org integrations,
+  Docker runtime, multi-repo worktrees. We ported methodology-only skills that
   work in any IDE. Quality over quantity." Bad answer: "We ran out of time."
 
 - [ ] **What would you build next if you had another semester?** Looking for: pattern
   lifecycle with real DB, routing accuracy evaluation loop, multi-agent coordination.
-  NOT looking for: "port more skills" or "add more rules."
+  NOT looking for: "port more skills" or "add more rules" without reasoning.
 
 ---
 
@@ -189,9 +186,9 @@ not just *what* they built?
 
 | Category | Weight | What it tests |
 |----------|--------|---------------|
-| Layer Separation | 20% | Do they know why three layers, not one? |
+| Layer Separation | 20% | Do they know why rules, hooks, and skills differ? |
 | Automatic Routing | 20% | Does routing happen without the model asking? |
-| Compliance as Behavior | 15% | Do guardrails fire automatically? |
+| Compliance as Behavior | 15% | Do guardrails and checks exist beyond good intentions? |
 | Pattern Persistence | 15% | Does learning cross session boundaries? |
 | Skill Methodology | 15% | Do they understand skills as reasoning, not code? |
 | Architecture Reasoning | 15% | Can they explain *why*, not just *what*? |
@@ -199,4 +196,4 @@ not just *what* they built?
 **A**: Nails 5-6 categories with clear evidence and articulate reasoning.
 **B**: Solid on 3-4 categories, weaker reasoning on the rest.
 **C**: Built the thing, can demo it, but can't explain why the architecture matters.
-**D**: Built parts of it, can't trace a prompt through all three layers.
+**D**: Built parts of it, can't trace a prompt through rules + hooks + skills.

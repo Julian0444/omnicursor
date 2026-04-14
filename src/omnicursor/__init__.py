@@ -1,4 +1,4 @@
-"""OmniCursor MCP package."""
+"""OmniCursor Python library (agents, skills, compliance, node contracts)."""
 
 __all__ = ["__version__"]
 

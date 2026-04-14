@@ -6,7 +6,7 @@
 
 ## 1. State at the Start of Phase 3A
 
-OmniCursor had two layers: **Cursor rules** (7 `.mdc` files) as the behavior/routing surface, and a **Python MCP server** (`src/omnicursor/`) as the structured backend. The MCP server exposed 3 tools: `get_agent_context`, `invoke_skill`, and `check_compliance`. Agent routing in `agents.py` was a hardcoded dictionary of 5 categories with an alias table and a generalist fallback. There were no hooks, no dynamic agent loading, no session tracking.
+> **Historical:** Early OmniCursor had **Cursor rules** (7 `.mdc` files) and a Python package under `src/omnicursor/` used for structured helpers; today that package is the **library** for tests/CI while IDE behavior is rules + hooks + `skills/*.md`. Agent routing in `agents.py` began as a hardcoded dictionary of 5 categories with an alias table and a generalist fallback. There were no hooks, no dynamic agent loading, no session tracking.
 
 ## 2. What Was Learned from OmniClaude
 

@@ -35,10 +35,9 @@
     ]
   },
   "instructions": [
-    "Reuse rule 15-handoff.mdc; keep 00-omninode-concepts and 01-codebase-research as the always-on base.",
-    "Call get_agent_context(\"handoff\") then invoke_skill(\"handoff\") and follow the skill verbatim.",
+    "Follow rule 15-handoff.mdc; keep 00-omninode-concepts and 01-codebase-research as the always-on base; read skills/handoff.md from the repo root.",
     "Prefer a dated file under docs/plans/ or docs/dev/handoffs/ so docs/dev/HANDOFF.md is not overwritten.",
-    "After producing the handoff, run check_compliance(\"handoff\", <brief summary>) on the output."
+    "Optionally validate output against src/omnicursor/compliance.py for skill handoff."
   ],
   "recommended_skill": "handoff"
 }

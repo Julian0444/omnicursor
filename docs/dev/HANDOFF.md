@@ -7,11 +7,11 @@
 
 ## 1. What OmniCursor Is
 
-OmniCursor is a **Cursor-native adaptation of OmniClaude** — a three-layer system that makes an AI coding assistant behave more intelligently without the LLM having to decide to do so:
+OmniCursor is a **Cursor-native adaptation of OmniClaude** — rules and hooks in the IDE, plus a **Python library** for tests and CI:
 
-1. **Cursor Rules** (`.cursor/rules/*.mdc`, 7 files) — always-on and keyword-activated behavioral instructions
-2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic Python scripts that fire on lifecycle events
-3. **MCP Tools** (`src/omnicursor/server.py`, 3 tools) — FastMCP backend for `get_agent_context`, `invoke_skill`, `check_compliance`
+1. **Cursor Rules** (`.cursor/rules/*.mdc`) — always-on and keyword-activated behavioral instructions
+2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints in `.cursor/hooks.json`, plus `_common.py` and `pattern_loader.py`
+3. **Python library** (`src/omnicursor/`) — `agents`, `skills`, `compliance`, node contracts — **in-process** for tests and tooling
 
 The reference implementation is `omniclaude-main/` (read-only). We selectively adapt its patterns, not mirror it.
 
@@ -69,10 +69,10 @@ Created `skills/merge-planner.md`, `skills/insights-to-plan.md`, `skills/handoff
 
 ### Task 9: Final Verification
 
-- 120 tests passing
+- Full `pytest` suite passing (see CI)
 - `ruff check` clean across `src/`, `tests/`, `.cursor/hooks/`
 - All hook smoke tests pass
-- MCP server imports cleanly
+- Library imports cleanly (`agents`, `skills`, `compliance`)
 - 4 unused imports cleaned up (pre-existing lint, not regressions)
 
 ---
@@ -90,15 +90,15 @@ Created `skills/merge-planner.md`, `skills/insights-to-plan.md`, `skills/handoff
 | `on_stop.py` | `stop` | Aggregates session events, 4-gate outcome classification (failed/success/abandoned/unknown), writes session summary |
 | `_common.py` | Shared | Paths (incl. `LEARNED_PATTERNS_FILE`), stdin/stdout, event logging, agent config loading |
 
-### MCP Tools (`src/omnicursor/`)
+### Python library (`src/omnicursor/`)
 
 | Module | Notes |
 |--------|-------|
-| `server.py` | 3 tools: `get_agent_context`, `invoke_skill`, `check_compliance` |
-| `agents.py` | Three-strategy scoring, `HARD_FLOOR=0.55`, `match_agent_candidates()`, backward-compatible `match_agent()`, dynamic JSON loading from `.cursor/agents/*.json` |
-| `compliance.py` | Registry for all 12 skills, 3–5 keyword checks each |
-| `skills.py` | Auto-discovers `skills/*.md` (12 skills) |
+| `agents.py` | Three-strategy scoring, `HARD_FLOOR=0.55`, `get_agent_context()`, dynamic JSON loading from `.cursor/agents/*.json` |
+| `compliance.py` | Registry for all skills, 3–5 keyword checks each |
+| `skills.py` | Auto-discovers `skills/*.md` |
 | `schemas.py` | `AgentContext`, `SkillDocument`, `ComplianceResult`, `PatternRecord`, `DatabaseStatus` |
+| `node_contracts.py` | Cursor-native `contract.yaml` discovery / validation |
 | `db.py` | Repo path constants, `InMemoryDatabase` placeholder |
 | `patterns.py` | Lists 4 preserved rules as `PatternRecord` objects (static) |
 
@@ -116,7 +116,7 @@ Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defen
 
 ### Tests
 
-120 tests across 8 test files, all passing. `pytest tests/ -v` runs in ~0.3s.
+All tests passing. `pytest tests/ -v` is fast (~sub-second on typical hardware).
 
 ---
 
@@ -124,10 +124,10 @@ Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defen
 
 | # | What to Show | Status |
 |---|-------------|--------|
-| 1 | Prompt auto-routed to correct agent without calling MCP | **Done** — `on_prompt.py` emits agent + confidence + reason via `systemMessage` |
+| 1 | Prompt auto-routed to correct agent via hook | **Done** — `on_prompt.py` emits agent + confidence + reason via `systemMessage` |
 | 2 | File edit auto-linted without user action | **Done** — `on_edit.py` runs diagnostic ruff |
-| 3 | Pattern from session A appears in session B | **Partial** — `learned_patterns.json` persists across sessions and is injected via `pattern_loader.py`. Missing: `store_pattern` MCP tool for writing new patterns |
-| 4 | Hooks disabled, system degrades to MCP-only | **Done** — MCP server works independently of hooks |
+| 3 | Pattern from session A appears in session B | **Partial** — `learned_patterns.json` persists and is injected via `pattern_loader.py`. Missing: ergonomic writer (e.g. script or hook) for new patterns |
+| 4 | Hooks disabled, system still usable | **Done** — rules + `skills/*.md` + library for tests |
 
 ---
 
@@ -135,7 +135,7 @@ Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defen
 
 | Item | Priority | Description |
 |------|----------|-------------|
-| `store_pattern` MCP tool | High | Enables writing new patterns from sessions — completes demo criterion 3 |
+| Pattern writer UX | High | Script or small flow to append `learned_patterns.json` — completes demo criterion 3 |
 | Seed `learned_patterns.json` | Medium | Ship a starter JSON file so the demo has pattern data out of the box |
 | Valkey integration | Deferred | JSON file persistence works; Valkey is a future performance upgrade |
 | `beforeMCPExecution` / `beforeReadFile` hooks | Deferred | Phase 3B — not needed for MVP |
@@ -148,7 +148,7 @@ Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defen
 - `.cursor/rules/*.mdc` are teaching artifacts — modify with care
 - Hooks use **Python stdlib only** (`difflib.SequenceMatcher` is stdlib; `yaml` is not)
 - All hooks exit 0 (except `on_shell.py` deny)
-- `pyproject.toml` deps stay minimal: `mcp`, `pydantic`
+- `pyproject.toml` deps stay minimal: `pydantic`, `pyyaml`
 - No Kafka, Qdrant, Slack, PostgreSQL, or Valkey as dependencies
 
 ---
@@ -157,7 +157,7 @@ Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defen
 
 1. **Prompt enrichment may not work.** `on_prompt.py` emits `{"systemMessage": ...}` but Cursor documentation is unclear on whether `beforeSubmitPrompt` output is consumed. The Implementation Brief says: treat this as a capability gate, not a design reset.
 
-2. **Scoring logic is duplicated.** `_score_agent()` exists in both `on_prompt.py` (hooks, stdlib) and `agents.py` (MCP). They are aligned (identical 3-strategy logic) but must stay in sync manually. Hooks cannot import from `src/omnicursor/`.
+2. **Scoring logic is duplicated.** `_score_agent()` exists in both `on_prompt.py` (hooks, stdlib) and `agents.py` (library). They are aligned (identical 3-strategy logic) but must stay in sync manually. Hooks cannot import from `src/omnicursor/`.
 
 ---
 
@@ -168,7 +168,7 @@ Ported from OmniClaude (8): `pr-review`, `pr-polish`, `hostile-reviewer`, `defen
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Tests (120, ~0.3s)
+# Tests
 pytest tests/ -v
 
 # Lint
@@ -183,8 +183,6 @@ echo '{"command": "rm -rf /"}' | python3 .cursor/hooks/on_shell.py
 # Smoke test on_stop.py
 echo '{"conversation_id": "test-123", "status": "completed"}' | python3 .cursor/hooks/on_stop.py
 
-# Run MCP server
-omnicursor-server
 ```
 
 ---

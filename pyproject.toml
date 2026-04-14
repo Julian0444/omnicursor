@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "omnicursor"
 version = "0.1.0"
-description = "Cursor-native MCP integration layer for OmniNode"
+description = "Cursor-native rules, hooks, and skills layer for OmniNode"
 readme = "docs/QUICKSTART.md"
 requires-python = ">=3.10"
 dependencies = [
-  "mcp[cli]>=1.0.0,<2.0.0",
   "pydantic>=2.11.0,<3.0.0",
+  "pyyaml>=6.0.0,<7.0.0",
 ]
 
 [project.optional-dependencies]
@@ -18,14 +18,14 @@ dev = [
   "pytest>=8.0.0",
 ]
 
-[project.scripts]
-omnicursor-server = "omnicursor.server:main"
-
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+omnicursor = ["nodes/*/contract.yaml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

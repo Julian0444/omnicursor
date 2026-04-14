@@ -1,117 +1,86 @@
 # OmniCursor
 
-Cursor-native adaptation of OmniClaude — combining rules, hooks, and tools into a deterministic AI workflow.
+Cursor-native adaptation of OmniClaude — **rules**, **hooks**, and **file-backed skills** (Markdown), plus a Python library for tests and CI.
 
 ## Architecture
 
-OmniCursor has three complementary layers:
-
-1. **Cursor Rules** (11 `.mdc` files in `.cursor/rules/`) — behavior surface for routing and interaction; always-on + keyword-activated
-2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic, stdlib only, no LLM
-3. **MCP Tools** (3 tools in `src/omnicursor/server.py`) — FastMCP backend for agent routing, skill invocation, and compliance validation
+1. **Cursor Rules** (11 `.mdc` files in `.cursor/rules/`) — behavior surface; always-on + keyword-activated
+2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints in `.cursor/hooks.json`, plus `_common.py` and `pattern_loader.py`. Deterministic, stdlib only, no LLM
+3. **Python library** (`src/omnicursor/`) — `agents`, `skills`, `compliance`, node contracts — for **pytest**, scripting, and rubric checks
 
 ## Quick Start
 
 ```bash
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-omnicursor-server
+pytest tests/ -v
 ```
 
-See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for full setup instructions.
+See [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) for Cursor setup, hooks, and end-to-end flow.
 
 ## Hooks
 
-Deterministic Python scripts that run on Cursor lifecycle events. Configured in `.cursor/hooks.json`.
+Deterministic Python scripts on Cursor lifecycle events. Configured in `.cursor/hooks.json`.
 
 | Hook | Script | What it does |
 |------|--------|--------------|
-| `beforeSubmitPrompt` | `on_prompt.py` | Three-strategy agent scoring (exact/fuzzy/keyword), emits `{"systemMessage": ...}` with agent + confidence + learned patterns |
-| `beforeShellExecution` | `on_shell.py` | Two-tier command guard: 9 HARD_BLOCK patterns (deny), 11 SOFT_WARN patterns (allow + warning) |
+| `beforeSubmitPrompt` | `on_prompt.py` | Three-strategy agent scoring, emits `{"systemMessage": ...}` with agent + confidence + learned patterns |
+| `beforeShellExecution` | `on_shell.py` | Two-tier command guard: HARD_BLOCK (deny), SOFT_WARN (allow + warning) |
 | `afterFileEdit` | `on_edit.py` | Logs edits, runs diagnostic `ruff check` on Python files |
-| `stop` | `on_stop.py` | Aggregates session events, classifies outcome (failed/success/abandoned/unknown) via 4-gate decision tree |
+| `stop` | `on_stop.py` | Session outcome classification (4-gate) and summaries |
 
-Supporting modules: `_common.py` (shared paths and helpers), `pattern_loader.py` (thread-safe in-memory pattern cache).
+Supporting modules: `_common.py`, `pattern_loader.py`. All hooks use stdlib only.
 
-All hooks use stdlib only (no pip dependencies).
+## Python library (tests & CI)
 
-## MCP Tools
-
-| Tool | Purpose |
-|------|---------|
-| `get_agent_context(category)` | Returns routing context for a rule-selected category |
-| `invoke_skill(skill_name)` | Loads a Markdown skill from the `skills/` directory |
-| `check_compliance(skill_name, response_summary)` | Validates model output against a skill's expected pattern |
+| Concern | Module |
+|---------|--------|
+| Category → routing context | `omnicursor.agents.get_agent_context` |
+| Load `skills/*.md` | `omnicursor.skills.SkillRepository` |
+| Keyword compliance checks | `omnicursor.compliance.check_compliance` |
 
 ## Agent Configs
 
-16 JSON configs in [`.cursor/agents/`](./.cursor/agents/) define activation patterns for prompt-based agent routing. Each config specifies `explicit_triggers`, `context_triggers`, and `activation_keywords` used by both hooks (`on_prompt.py`) and MCP (`agents.py`) with identical three-strategy scoring:
-
-1. Exact substring match → 0.95 confidence
-2. Fuzzy `SequenceMatcher` with length-aware thresholds
-3. Keyword overlap → scaled 0.55–0.85
-
-`HARD_FLOOR = 0.55` — candidates below this are discarded.
+17 JSON configs in [`.cursor/agents/`](./.cursor/agents/) define activation patterns for prompt-based routing. Hooks (`on_prompt.py`) and `agents.py` use the same three-strategy scoring (`HARD_FLOOR = 0.55`).
 
 ## Skills
 
-14 Markdown skills in [`skills/`](./skills/):
-
-| Skill | Purpose |
-|-------|---------|
-| `systematic-debugging` | Reproduce, hypothesize, verify, fix |
-| `brainstorming` | Refine ideas into design docs through collaborative dialogue |
-| `writing-plans` | Convert designs into TDD implementation plans |
-| `plan-ticket` | Generate YAML ticket contract templates with repo detection |
-| `create-ticket` | Create Linear issues from YAML via Cursor Linear MCP (Bucket 3) |
-| `consume-ticket` | Linear issue → intake, or confirm done → status + verification comment (Bucket 3) |
-| `pr-review` | Severity-classified PR review with merge readiness verdict |
-| `pr-polish` | Three-phase PR refinement to merge-ready state |
-| `hostile-reviewer` | Adversarial code review with iterative convergence |
-| `defense-in-depth` | Four-layer validation for data-flow bugs |
-| `merge-planner` | PR classification and priority-ordered merge planning |
-| `insights-to-plan` | Convert analysis findings into prioritized action plans |
-| `handoff` | Session continuity through structured context capture |
-| `using-git-worktrees` | Isolated workspace creation with safety verification |
-
-Each skill has a corresponding compliance registry entry in `src/omnicursor/compliance.py` with 3–5 keyword-based checks.
+14 Markdown skills in [`skills/`](./skills/): methodology documents the model reads from disk (paths in each rule / QUICKSTART). Each skill has a compliance registry entry in `src/omnicursor/compliance.py`.
 
 ## Directory guides
 
-Major folders include their own **`README.md`** (e.g. `.cursor/`, `docs/`, `skills/`, `src/omnicursor/`, `tests/`) so you can orient from any path in the tree.
+Major folders include **`README.md`** (e.g. `.cursor/`, `docs/`, `skills/`, `src/omnicursor/`, `tests/`).
 
 ## Repository Layout
 
 ```text
 OmniCursor/
 ├── .cursor/
-│   ├── rules/              # 11 Cursor rules (.mdc)
-│   ├── hooks/              # 4 hook entrypoints + _common.py + pattern_loader.py
-│   ├── hooks.json          # Hook configuration
-│   └── agents/             # 17 JSON agent configs
-├── docs/                   # QUICKSTART, ARCHITECTURE; dev/ for internal & progress docs
-├── skills/                 # 12 Markdown skill files
-├── src/omnicursor/         # Python MCP backend
-├── tests/                  # Unit tests (120 tests)
+│   ├── rules/              # Cursor rules (.mdc)
+│   ├── hooks/              # Hook scripts + helpers
+│   ├── hooks.json
+│   └── agents/             # Agent JSON configs
+├── docs/
+├── skills/                 # Markdown skills
+├── src/omnicursor/         # Python library
+├── tests/
 ├── omniclaude-main/        # Read-only OmniClaude reference
-├── pyproject.toml          # Package config
-└── CLAUDE.md               # Repo conventions and architecture overview
+├── pyproject.toml
+└── CLAUDE.md
 ```
 
 ## Tests
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v              # 120 tests
+pytest tests/ -v
 ruff check src/ tests/ .cursor/hooks/
 ```
 
 ## Documentation
 
-- [`CLAUDE.md`](./CLAUDE.md) — Repo conventions, architecture overview, source-of-truth hierarchy
-- [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) — Setup, MCP tools, hooks, and end-to-end flow
-- [`docs/dev/HANDOFF.md`](./docs/dev/HANDOFF.md) — Current implementation state and remaining work
-- [`docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md`](./docs/dev/OMNICURSOR_IMPLEMENTATION_BRIEF.md) — Implementation decisions and copy map from OmniClaude
-- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — Starter-pack bucket model and frozen adapter contract
-- [`docs/dev/DEVELOPER.md`](./docs/dev/DEVELOPER.md) — Module mapping and contributor orientation
-- [`docs/dev/STUDENT_GUIDE.md`](./docs/dev/STUDENT_GUIDE.md) — Original capstone project roadmap (historical)
+- [`CLAUDE.md`](./CLAUDE.md) — Conventions and architecture
+- [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) — Setup, hooks, skills
+- [`docs/dev/HANDOFF.md`](./docs/dev/HANDOFF.md) — Implementation state
+- [`OmniCursor_DoD_Rubric.md`](./OmniCursor_DoD_Rubric.md) — Capstone rubric
+- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — Starter-pack buckets / adapter contract

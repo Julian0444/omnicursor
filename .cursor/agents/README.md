@@ -1,6 +1,6 @@
 # Agent JSON configs
 
-Seventeen files, one per specialized routing profile. Cursor hooks (`on_prompt.py`) and the MCP server both use the same underlying **trigger scoring** (explicit vs context triggers) as defined in these configs.
+Seventeen files, one per specialized routing profile. Cursor hooks (`on_prompt.py`) and `src/omnicursor/agents.py` use the same underlying **trigger scoring** (explicit vs context triggers) as defined in these configs.
 
 **Merge model:** `src/omnicursor/agents.py` loads `*.json` here and merges them with hardcoded `AGENT_CONTEXTS` (debugging, brainstorming, planning, ticketing) plus aliases.
 

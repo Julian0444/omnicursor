@@ -10,11 +10,11 @@ OmniCursor **behavior surface** for the model. Rules `00` and `01` are **always 
 | [`10-brainstorming.mdc`](./10-brainstorming.mdc) | Bucket 1 — idea → design doc. |
 | [`11-writing-plans.mdc`](./11-writing-plans.mdc) | Bucket 1 — design → implementation plan. |
 | [`12-plan-ticket.mdc`](./12-plan-ticket.mdc) | Bucket 2 — plan → YAML ticket template. |
-| [`13-systematic-debugging.mdc`](./13-systematic-debugging.mdc) | Debugging methodology + MCP alignment. |
+| [`13-systematic-debugging.mdc`](./13-systematic-debugging.mdc) | Debugging methodology + hook/skill alignment. |
 | [`14-pr-review.mdc`](./14-pr-review.mdc) | PR / merge-readiness review + severity rubric. |
 | [`15-handoff.mdc`](./15-handoff.mdc) | Session continuity — structured handoff manifest. |
 
-**MCP:** Many rules assume OmniCursor server tools (`get_agent_context`, `invoke_skill`, `check_compliance`). See [docs/QUICKSTART.md](../../docs/QUICKSTART.md).
+**Skills:** Rules direct the model to read `skills/*.md`. Structured routing/compliance for tests lives in `src/omnicursor/`. See [docs/QUICKSTART.md](../../docs/QUICKSTART.md).
 
 **Teaching / capstone:** [docs/dev/STUDENT_GUIDE.md](../../docs/dev/STUDENT_GUIDE.md), [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) (bucket model; Bucket 3 is conceptual — no `adapter-stub` rule in this repo).
 

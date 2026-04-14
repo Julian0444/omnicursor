@@ -38,7 +38,7 @@ This is a **conceptual** mapping for readers coming from OmniClaude terminology,
 
 | OmniNode / Claude-style notion | OmniCursor equivalent | Parity |
 |--------------------------------|----------------------|--------|
-| SessionStart | *(none registered)* | **Gap** — any “bootstrap” logic lives in rules/MCP/docs, not a dedicated hook |
+| SessionStart | *(none registered)* | **Gap** — any “bootstrap” logic lives in rules/docs, not a dedicated hook |
 | UserPromptSubmit | `beforeSubmitPrompt` | **Strong** for classification + `systemMessage` emission |
 | PreToolUse (inspect / gate before tools) | *(none)* | **Gap** — see §5 Phase 3B |
 | PostToolUse | `afterFileEdit` only for edits | **Weak** — Edit-only, not “after every tool” |
@@ -78,7 +78,7 @@ Until registered in `.cursor/hooks.json` and implemented, these are **design pla
 | `.cursor/hooks/on_stop.py` | Stop / outcome |
 | `.cursor/hooks/_common.py` | Shared helpers |
 | `.cursor/hooks/pattern_loader.py` | Learned-pattern cache |
-| `src/omnicursor/agents.py` | Same three-strategy scoring for MCP path (`HARD_FLOOR = 0.55`) |
+| `src/omnicursor/agents.py` | Same three-strategy scoring for library/tests path (`HARD_FLOOR = 0.55`) |
 
 **Duplication note:** Hook code cannot import `src/omnicursor/`; scoring logic is mirrored between `on_prompt.py` and `agents.py` and must be kept aligned manually.
 
@@ -86,7 +86,7 @@ Until registered in `.cursor/hooks.json` and implemented, these are **design pla
 
 ## Related docs
 
-- [`ADR-hook-first-architecture.md`](./ADR-hook-first-architecture.md) — why hooks vs rules vs MCP (consolidation story)
+- [`ADR-hook-first-architecture.md`](./ADR-hook-first-architecture.md) — why hooks vs rules vs library (consolidation story)
 - `CLAUDE.md` — architecture and hook execution table
 - [`HANDOFF.md`](./HANDOFF.md) — task history, demo criteria, known ambiguities
 - `OmniCursor_DoD_Rubric.md` — observable verification (e.g. hook smoke tests, rubric §2)

@@ -26,7 +26,7 @@ Triggers on push and PR to `main`. Runs on `ubuntu-latest` with Python 3.12.
 
 ## What Was NOT Done
 
-- No `store_pattern` MCP tool (Kailash's task)
+- No `store_pattern` automation yet (Kailash's task)
 - No Cursor plugin research (Andy's task)
 - No OmniIntelligence integration planning (Julian's task)
 
@@ -39,12 +39,12 @@ Triggers on push and PR to `main`. Runs on `ubuntu-latest` with Python 3.12.
 
 ### Andy
 
-- Harden `src/omnicursor/server.py` and `src/omnicursor/agents.py`
+- Harden `src/omnicursor/agents.py` (library)
 - Research Cursor plugin connection path
 
 ### Kailash
 
-- Implement `store_pattern` MCP tool in `src/omnicursor/server.py`
+- Implement pattern-append UX (script or hook)
 - Keep JSON persistence lightweight
 
 ### Julian

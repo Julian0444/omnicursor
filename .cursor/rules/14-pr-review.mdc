@@ -1,5 +1,5 @@
 ---
-description: Activates when the user asks for a PR review, pull request review, merge readiness check, severity-classified findings, or code review with CRITICAL/MAJOR/MINOR/NIT. Uses OmniCursor MCP tools without replacing the preserved starter-kit rules.
+description: Activates when the user asks for a PR review, pull request review, merge readiness check, severity-classified findings, or code review with CRITICAL/MAJOR/MINOR/NIT. Uses OmniCursor hooks and file-backed skills.
 globs:
 alwaysApply: false
 ---
@@ -14,9 +14,9 @@ It does not replace `00-omninode-concepts`, `01-codebase-research`, `02-no-secre
 ## Routing Contract
 
 1. Self-classify the request as **`review`** (alias: `pr`, `pull-request`, `pr-review`).
-2. Call MCP tool **`get_agent_context`** with `category="review"`.
-3. Call MCP tool **`invoke_skill`** with `skill_name="pr-review"` when `recommended_skill` is set.
-4. After the review, call **`check_compliance`** with `skill_name="pr-review"` and a short summary of the review text.
+2. Prefer hook-injected routing (`beforeSubmitPrompt`) when present.
+3. Read **`skills/pr-review.md`** at the repository root and follow it.
+4. Optionally validate output against the keyword checks in `src/omnicursor/compliance.py` for skill **`pr-review`** (e.g. via tests or a short Python snippet).
 
 ## Working Style
 

@@ -1,5 +1,8 @@
 """afterFileEdit hook — log edits and run diagnostic ruff on Python files.
 
+Node contract: ``node_cursor_file_edit_effect``
+(``src/omnicursor/nodes/node_cursor_file_edit_effect/contract.yaml``).
+
 Informational only — Cursor ignores stdout. Never modifies files.
 """
 

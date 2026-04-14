@@ -1,5 +1,8 @@
 """beforeShellExecution hook — two-tier shell command guard.
 
+Node contract: ``node_cursor_shell_guard_effect``
+(``src/omnicursor/nodes/node_cursor_shell_guard_effect/contract.yaml``).
+
 This hook CAN control execution. Return deny to block, allow to proceed.
 """
 

@@ -9,11 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Run MCP server
-omnicursor-server
-
 # Tests
-pytest tests/ -v              # full suite (120 tests)
+pytest tests/ -v              # full suite
 pytest tests/test_agents.py -v  # single file
 pytest tests/ -k "test_debug"   # by name pattern
 
@@ -23,11 +20,11 @@ ruff check src/ tests/ .cursor/hooks/
 
 ## Architecture
 
-OmniCursor is a Cursor-native adaptation of OmniClaude, built from three layers:
+OmniCursor is **Cursor-native**: **rules** + **hooks** define IDE behavior. A **Python library** under `src/omnicursor/` supports **tests**, **CI**, and optional scripting.
 
-1. **Cursor Rules** (`.cursor/rules/`, 11 `.mdc` files) — behavior surface. Rules `00`–`02` are always-on; `10`–`17` activate on keyword match (`16` / `17` = Linear create / consume). Rules call MCP tools for routing, skills, and compliance.
-2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints registered in `.cursor/hooks.json`, plus 2 supporting modules (`_common.py`, `pattern_loader.py`). Deterministic lifecycle scripts, stdlib only, no LLM.
-3. **MCP Tools** (`src/omnicursor/server.py`, 3 tools) — FastMCP backend for `get_agent_context`, `invoke_skill`, `check_compliance`.
+1. **Cursor Rules** (`.cursor/rules/`, 11 `.mdc` files) — behavior surface. Rules `00`–`02` are always-on; `10`–`17` activate on keyword match (`16` / `17` = Linear create / consume). Rules direct the model to read **`skills/*.md`** and to use hook-injected routing when present.
+2. **Cursor Hooks** (`.cursor/hooks/`) — 4 hook entrypoints in `.cursor/hooks.json`, plus `_common.py` and `pattern_loader.py`. Deterministic lifecycle scripts, stdlib only, no LLM. Each hook is described by an **OmniClaude-shaped node contract** in `src/omnicursor/nodes/*/contract.yaml`; see `docs/dev/OMNICURSOR_NODE_CONTRACTS.md` and `omnicursor.node_contracts`.
+3. **Python library** (`src/omnicursor/`) — `get_agent_context`, `SkillRepository`, `check_compliance`, and schemas — for **tests and automation**.
 
 ### Agent routing — two merge layers + three-strategy scoring
 
@@ -96,7 +93,7 @@ Both `on_prompt.py` and `agents.py` use identical three-strategy scoring:
 - `.cursor/rules/*.mdc` are teaching artifacts — modify with care.
 - Hooks must use **Python stdlib only** (no pip dependencies).
 - `on_edit.py` runs `ruff check` diagnostically — never `--fix`, never modifies files.
-- `schemas.py` defines 5 Pydantic v2 models: `AgentContext`, `SkillDocument`, `ComplianceResult`, `PatternRecord`, `DatabaseStatus`. The MCP server and agents module both depend on these models.
+- `schemas.py` defines 5 Pydantic v2 models: `AgentContext`, `SkillDocument`, `ComplianceResult`, `PatternRecord`, `DatabaseStatus`. The agents, skills, and compliance modules depend on these models.
 - When adding a new agent: create `.cursor/agents/<name>.json` with `name`, `description`, `category`, `activation_patterns` (must include `explicit_triggers`, `context_triggers`, and `activation_keywords`), `instructions`, `recommended_skill`. It auto-loads on startup.
 - When adding a new skill: create `skills/<name>.md`, then add a compliance registry entry in `compliance.py` with 3–5 keyword checks. Update the expected sets in `tests/test_compliance.py` and `tests/test_skills.py`.
 

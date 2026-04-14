@@ -4,7 +4,7 @@
 
 | Area | Files |
 |------|--------|
-| MCP / agents | `test_agents.py`, `test_server.py`, … |
+| Library / agents | `test_agents.py`, `test_server.py` (public API), … |
 | Hooks | `test_hooks_prompt.py`, `test_hooks_shell.py`, `test_hooks_edit.py`, `test_hooks_stop.py` |
 | Prompts & rubrics | [`prompts/`](./prompts/), [`rubrics/`](./rubrics/) — manual / rubric-driven rule evaluation |
 
