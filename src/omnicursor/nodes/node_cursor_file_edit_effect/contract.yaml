@@ -22,8 +22,8 @@ description: >
 
 cursor_native:
   hook_event: afterFileEdit
-  hooks_json_command: "python3 .cursor/hooks/on_edit.py"
-  implementation: .cursor/hooks/on_edit.py
+  hooks_json_command: "python3 .cursor/hooks/scripts/post-edit.py"
+  implementation: .cursor/hooks/scripts/post-edit.py
   blocking: false
 
 execution:

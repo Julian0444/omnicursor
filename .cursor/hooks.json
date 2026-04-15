@@ -13,7 +13,7 @@
     ],
     "afterFileEdit": [
       {
-        "command": "python3 .cursor/hooks/on_edit.py"
+        "command": "python3 .cursor/hooks/scripts/post-edit.py"
       }
     ],
     "stop": [
