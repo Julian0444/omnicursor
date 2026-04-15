@@ -23,8 +23,8 @@ description: >
 
 cursor_native:
   hook_event: stop
-  hooks_json_command: "python3 .cursor/hooks/on_stop.py"
-  implementation: .cursor/hooks/on_stop.py
+  hooks_json_command: "python3 .cursor/hooks/scripts/stop.py"
+  implementation: .cursor/hooks/scripts/stop.py
   blocking: false
 
 execution:

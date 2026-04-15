@@ -18,7 +18,7 @@
     ],
     "stop": [
       {
-        "command": "python3 .cursor/hooks/on_stop.py"
+        "command": "python3 .cursor/hooks/scripts/stop.py"
       }
     ]
   }
