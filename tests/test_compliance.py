@@ -102,3 +102,54 @@ def test_plan_ticket_compliance() -> None:
     )
     result = check_compliance("plan-ticket", summary)
     assert result.compliant is True
+
+
+def test_hostile_reviewer_fully_compliant() -> None:
+    summary = (
+        "Adversarial review using skeptical analytical stance. "
+        "Findings classified by severity: CRITICAL (1), MAJOR (2), MINOR (1), NIT (3). "
+        "Evidence: file src/auth.py line 42 — missing retry guard. Impact: data loss. "
+        "Fix: add retry with exponential backoff. What to change: wrap call in retry loop. "
+        "Iterating to convergence: 3 consecutive clean passes. "
+        "Final verdict: risks_noted. Stable after pass 4."
+    )
+    result = check_compliance("hostile-reviewer", summary)
+    assert result.skill_name == "hostile-reviewer"
+    assert result.compliant is True
+    assert result.missing == []
+    assert all(result.checks.values())
+
+
+def test_hostile_reviewer_missing_adversarial_stance() -> None:
+    summary = (
+        "Findings classified by severity: CRITICAL, MAJOR, MINOR. "
+        "Evidence shows file src/auth.py has an issue. Fix: update the code. "
+        "Pass 1 was clean, pass 2 was clean. Verdict: clean."
+    )
+    result = check_compliance("hostile-reviewer", summary)
+    assert result.compliant is False
+    assert "uses_adversarial_stance" in result.missing
+
+
+def test_hostile_reviewer_missing_convergence() -> None:
+    summary = (
+        "Adversarial skeptical review. "
+        "Findings: CRITICAL defect in auth layer. Evidence: file auth.py. "
+        "Fix: rewrite the method. What to change: see line 12. "
+        "Final verdict: blocking_issue."
+    )
+    result = check_compliance("hostile-reviewer", summary)
+    assert result.compliant is False
+    assert "iterates_to_convergence" in result.missing
+
+
+def test_hostile_reviewer_missing_verdict() -> None:
+    summary = (
+        "Adversarial skeptical review with hidden defects assumed. "
+        "Findings classified: CRITICAL severity issue found. "
+        "Evidence: file db.py, impact high. Fix: add validation. "
+        "Convergence achieved after 3 iterations."
+    )
+    result = check_compliance("hostile-reviewer", summary)
+    assert result.compliant is False
+    assert "states_verdict" in result.missing
