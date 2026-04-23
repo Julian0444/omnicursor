@@ -1,39 +1,27 @@
-# Team Worktree Convention (4-Member)
+# Core Worktree Convention
 
-This convention standardizes how the OmniCursor team uses Git worktrees and GitHub branches to avoid conflicts and keep PRs reviewable.
+This convention standardizes how to use Git worktrees when only the core lane is active. The goal is to keep `main` stable while all feature work happens on `core`.
 
-## Team Roles and Branch Prefixes
+## Branch Model
 
-Use one prefix per role. Every branch and worktree name must start with that prefix.
+- Stable branch: `main`
+- Working branch: `core`
 
-- Member 1 - CI and quality automation: `ci/`
-- Member 2 - OmniCursor repo core (library + Cursor surface): `core/`
-- Member 3 - OmniClaude reuse and pattern lifecycle: `reuse/`
-- Member 4 - External ecosystem integration: `integration/`
-
-Examples:
-
-- `ci/add-pr-workflow`
-- `core/harden-agent-routing`
-- `reuse/store-pattern-mvp`
-- `integration/omniintelligence-bridge-poc`
+All core changes are committed on `core` and merged back to `main` through PRs.
 
 ## Worktree Location and Naming
 
 - Primary location: `.worktrees/` at repo root.
-- Worktree directory name must match branch slug without `/`.
-- Format: `.worktrees/<prefix>-<short-topic>`
+- Worktree directory for core: `.worktrees/core-bootstrap`
+- Branch used in this worktree: `core`
 
-Examples:
-
-- Branch: `core/harden-agent-routing`
-- Worktree: `.worktrees/core-harden-agent-routing`
+Use additional core worktrees only for temporary experiments, and remove them after merge.
 
 ## One-Time Setup
 
 1. Ensure `.worktrees/` is ignored in `.gitignore`.
-2. From repo root, create your worktree:
-   - `git worktree add .worktrees/<prefix>-<topic> -b <prefix>/<topic>`
+2. From repo root, create your core worktree:
+   - `git worktree add .worktrees/core-bootstrap -b core`
 3. Enter worktree and install deps:
    - `python3.12 -m venv .venv`
    - `source .venv/bin/activate`
@@ -44,39 +32,29 @@ Examples:
 
 If baseline is not green, stop and post failures in team chat before feature commits.
 
-## Daily Team Workflow
+## Daily Workflow
 
-1. Start in your assigned worktree and sync:
+1. Start in your core worktree and sync:
    - `git fetch origin`
-   - `git rebase origin/main`
+   - `git rebase origin/main` (while on `core`)
 2. Keep commits scoped to one task or fix.
-3. Open a PR from your role-prefixed branch.
-4. Link related PRs when cross-role changes are required.
+3. Push `core` frequently:
+   - `git push`
+4. Open PRs from `core` into `main`.
 5. Re-run lint and tests before each push.
 
-## Ownership Boundaries
+## Scope Ownership
 
-- `ci/*` owns `.github/workflows/`, quality gates, and baseline automation.
-- `core/*` owns `src/omnicursor/`, `.cursor/rules/`, and `.cursor/hooks/` behavior in this repo.
-- `reuse/*` owns reusable OmniClaude-derived patterns, routing borrow logic, and pattern write-path implementation.
-- `integration/*` owns OmniCursor bridges to OmniIntelligence, OmniMemory, OmniDash, and local integration orchestration.
+`core` owns all active work in this setup, including:
 
-When work crosses boundaries, one role is the primary owner and others contribute via small follow-up PRs.
-
-## Merge and Conflict Policy
-
-- Merge order for cross-cutting work:
-  1. `ci/*` baseline and guardrails
-  2. `core/*` internal behavior changes
-  3. `reuse/*` borrowed logic and pattern path updates
-  4. `integration/*` external bridge updates
-- Never force-push shared branches.
-- Prefer rebasing your branch on `origin/main` before requesting review.
-- If two branches touch the same file heavily, pair for a conflict-resolution session before merge.
+- `src/omnicursor/`
+- `.cursor/rules/`
+- `.cursor/hooks/`
+- repo docs and tests required for the core changes
 
 ## Pull Request Expectations
 
-- PR title format: `[<role>] <short outcome>`
+- PR title format: `[core] <short outcome>`
   - Example: `[core] tighten agent context fallback behavior`
 - Include:
   - Why the change is needed
@@ -90,8 +68,9 @@ After PR merge:
 
 1. `git checkout main`
 2. `git pull --ff-only`
-3. `git branch -d <prefix>/<topic>`
-4. `git worktree remove .worktrees/<prefix>-<topic>`
+3. Keep `core` (do not delete it)
+4. If temporary extra worktrees were created, remove them:
+   - `git worktree remove .worktrees/<temp-core-worktree>`
 5. `git worktree prune`
 
 Run cleanup at least once per week to avoid stale worktrees.
