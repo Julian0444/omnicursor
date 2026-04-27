@@ -92,6 +92,7 @@ _status_icon() {
 declare -a LINKS=(
     ".cursor/hooks.json|$OMNICURSOR_ROOT/.cursor/hooks.json"
     ".cursor/hooks|$OMNICURSOR_ROOT/.cursor/hooks"
+    ".cursor/agents|$OMNICURSOR_ROOT/.cursor/agents"
 )
 
 for rule in "$OMNICURSOR_ROOT/.cursor/rules/"*.mdc; do

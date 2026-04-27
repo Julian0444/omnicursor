@@ -87,6 +87,9 @@ COMPLIANCE_REGISTRY: Dict[str, List[Tuple[str, List[str]]]] = {
             "verification", "pytest", "lint", "ruff", "mypy",
             "unit_test", "unit test", "blocking",
         ]),
+        ("creates_linear_ticket", [
+            "tracker.create_issue", "linear", "ticket", "created", "url",
+        ]),
     ],
     "pr-review": [
         ("classifies_by_severity", [
@@ -210,6 +213,21 @@ COMPLIANCE_REGISTRY: Dict[str, List[Tuple[str, List[str]]]] = {
         ("states_outcome", ["outcome", "success", "failed", "abandoned", "unknown"]),
         ("lists_files_edited", ["files edited", "file edited"]),
         ("suggests_next_steps", ["next step", "suggested", "suggest"]),
+    ],
+    "plan-review": [
+        ("checks_count_integrity", ["count", "task", "numeric", "found", "prose"]),
+        ("checks_acceptance_criteria", ["acceptance", "criteria", "testable", "vague"]),
+        ("states_verdict", ["verdict", "pass", "fail", "critical", "major"]),
+    ],
+    "plan-to-tickets": [
+        ("parses_task_sections", ["task", "## task", "heading", "section", "found"]),
+        ("creates_epic", ["epic", "parent epic"]),
+        ("returns_ticket_ids", ["ticket", "linear", "created", "OMN-", "id"]),
+    ],
+    "execute-plan": [
+        ("calls_plan_review", ["plan-review", "review", "r1", "r2", "verdict"]),
+        ("calls_plan_to_tickets", ["plan-to-tickets", "ticket", "linear", "epic", "OMN-"]),
+        ("reports_summary", ["passed", "blocked", "skipped", "summary"]),
     ],
 }
 

@@ -84,6 +84,41 @@ Say the keyword in chat and Cursor reads the skill file and follows it.
 | `insights to plan` | insights-to-plan | Converts retrospective notes into actionable tasks |
 | `handoff` | handoff | Saves session context so the next session picks up cleanly |
 | `worktree` | using-git-worktrees | Isolated branch workspaces without stashing |
+| `/plan-review` | plan-review | Adversarial R1–R6 check on a plan file before execution |
+| `/plan-to-tickets` | plan-to-tickets | Parse a plan file and batch-create Linear tickets |
+| `/execute_plan` | execute-plan | Full autonomous pipeline: review → tickets → implement |
+
+---
+
+## Linear MCP Setup (for plan-to-tickets and execute_plan)
+
+`plan-to-tickets` and `execute_plan` create tickets in Linear via MCP. Skip this section if you don't use Linear.
+
+**1. Get your Linear API key**
+
+Linear → Settings → API → Personal API Keys → Create key.
+
+**2. Edit `~/.cursor/mcp.json`** (create the file if it doesn't exist):
+
+```json
+{
+  "mcpServers": {
+    "linear": {
+      "command": "npx",
+      "args": ["-y", "@linear/mcp-server"],
+      "env": {
+        "LINEAR_API_KEY": "lin_api_XXXX"
+      }
+    }
+  }
+}
+```
+
+Replace `lin_api_XXXX` with your actual key.
+
+**3. Restart Cursor** — the `tracker.*` MCP tools become available in chat.
+
+**4. Verify** — open a Cursor chat and say "list my Linear teams". It should return your teams.
 
 ---
 

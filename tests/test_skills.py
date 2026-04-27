@@ -41,11 +41,14 @@ def test_available_skills_lists_all(repository: SkillRepository) -> None:
     expected = [
         "brainstorming",
         "defense-in-depth",
+        "execute-plan",
         "handoff",
         "hostile-reviewer",
         "insights-to-plan",
         "merge-planner",
+        "plan-review",
         "plan-ticket",
+        "plan-to-tickets",
         "pr-polish",
         "pr-review",
         "recap",
@@ -61,6 +64,27 @@ def test_load_recap_skill(repository: SkillRepository) -> None:
     assert skill.skill_name == "recap"
     assert skill.path == ".cursor/skills/recap/SKILL.md"
     assert "Session Recap" in skill.content
+
+
+def test_load_plan_review_skill(repository: SkillRepository) -> None:
+    skill = repository.load_skill("plan-review")
+    assert skill.skill_name == "plan-review"
+    assert skill.path == ".cursor/skills/plan-review/SKILL.md"
+    assert "Plan Review" in skill.content
+
+
+def test_load_plan_to_tickets_skill(repository: SkillRepository) -> None:
+    skill = repository.load_skill("plan-to-tickets")
+    assert skill.skill_name == "plan-to-tickets"
+    assert skill.path == ".cursor/skills/plan-to-tickets/SKILL.md"
+    assert "Plan to Tickets" in skill.content
+
+
+def test_load_execute_plan_skill(repository: SkillRepository) -> None:
+    skill = repository.load_skill("execute-plan")
+    assert skill.skill_name == "execute-plan"
+    assert skill.path == ".cursor/skills/execute-plan/SKILL.md"
+    assert "Execute Plan" in skill.content
 
 
 def test_load_nonexistent_skill_raises(repository: SkillRepository) -> None:
