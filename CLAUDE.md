@@ -114,6 +114,30 @@ Both `on_prompt.py` and `agents.py` use identical three-strategy scoring:
 - When adding a new skill: create `skills/<name>.md` AND copy it to `.cursor/skills/<name>/SKILL.md` (both paths are required — CI scans `skills/*.md`, `SkillRepository` loads from `.cursor/skills/<name>/SKILL.md`). Add a smoke-check entry in `compliance.py` with 3–5 keyword/phrase checks. Update the expected sets in `tests/test_compliance.py` and `tests/test_skills.py`.
 - **Port track** (agents, skills, ONEX nodes & contracts from OmniClaude): `docs/dev/MIGRATION_PHASES_HANDOFF.md`. Hooks, Kafka, Linear-in-hooks, MCP bridge, and authoritative pattern writes are covered in `docs/OMNICURSOR_MIGRATION_PLAN.md` / other tracks.
 
+## Omnimarket bridge
+
+OmniCursor invokes **omnimarket** nodes as the primary bridge to OmniNode — not direct omniintelligence service APIs.
+
+### Locating the checkout
+
+- Set `OMNIMARKET_ROOT` to the absolute path of a local omnimarket checkout.
+- If `OMNIMARKET_ROOT` is unset, bridge code may fall back to `omnimarket-main/` in the repo root as a **dev convenience only**.
+- Omnimarket is **never cloned from GitHub at runtime**. The checkout must already exist locally.
+
+### Invocation
+
+- **Preferred:** `python -m omnimarket.nodes.<node_name>` via subprocess (e.g. `python -m omnimarket.nodes.node_local_review --dry-run`). The bridge injects `{OMNIMARKET_ROOT}/src` into `PYTHONPATH` for the subprocess because omnimarket uses a `src/` layout.
+- **Fallback:** In-process handler import — only if the subprocess path is blocked.
+- **Out of scope:** `onex run <contract.yaml>` (broken upstream routing validation) and direct HTTP calls to omniintelligence reducers/orchestrators/quality-scoring services.
+
+### Docker
+
+`compose.yaml` is approved as-is for local infra (Postgres, Redpanda, Valkey, intelligence services). It is **not** the primary bridge path — prefer local subprocess invocation of omnimarket nodes. Do not expand Docker Compose for bridge work.
+
+### Patterns
+
+Pattern **writes** stay local (file + team-owned PostgreSQL). Bridging pattern writes to upstream intelligence is **out of capstone scope** (year-2). Optional `OMNICURSOR_PATTERN_SYNC_HTTP` exists for dev experimentation only (default off).
+
 ## Source-of-truth hierarchy
 
 When documents disagree, use this order:

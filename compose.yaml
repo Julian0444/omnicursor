@@ -1,0 +1,317 @@
+name: omnicursor-omninode
+
+x-intelligence-env: &intelligence-env
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-omnicursor-dev-postgres}
+  VALKEY_PASSWORD: ${VALKEY_PASSWORD:-valkey-dev-password}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  OMNIINTELLIGENCE_DB_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-omnicursor-dev-postgres}@omnibase-infra-postgres:5432/omniintelligence"
+  KAFKA_BOOTSTRAP_SERVERS: "omnibase-infra-redpanda:9092"
+  KAFKA_BROKER_ALLOWLIST: "omnibase-infra-redpanda:"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-omnicursor-dev-postgres}
+      POSTGRES_DB: omnibase_infra
+    ports:
+      - "${POSTGRES_EXTERNAL_PORT:-5436}:5432"
+    volumes:
+      - omnicursor_postgres_data:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    networks:
+      omninode:
+        aliases:
+          - omnibase-infra-postgres
+          - postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d omnibase_infra"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  redpanda:
+    image: redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda
+      - start
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:${REDPANDA_EXTERNAL_PORT:-19092}
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr
+      - internal://redpanda:8082,external://localhost:${REDPANDA_PANDAPROXY_PORT:-18082}
+      - --schema-registry-addr
+      - internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr
+      - redpanda:33145
+      - --advertise-rpc-addr
+      - redpanda:33145
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --memory
+      - ${REDPANDA_MEMORY:-1G}
+    ports:
+      - "${REDPANDA_EXTERNAL_PORT:-19092}:19092"
+      - "${REDPANDA_PANDAPROXY_PORT:-18082}:18082"
+      - "${REDPANDA_SCHEMA_REGISTRY_PORT:-18081}:18081"
+      - "${REDPANDA_ADMIN_PORT:-19644}:9644"
+    networks:
+      omninode:
+        aliases:
+          - omnibase-infra-redpanda
+          - redpanda
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster info --brokers=localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:8
+    command: >
+      sh -c 'valkey-server --appendonly yes --maxmemory 256mb --maxmemory-policy
+      allkeys-lru $${VALKEY_PASSWORD:+--requirepass "$$VALKEY_PASSWORD"}'
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:-valkey-dev-password}
+    ports:
+      - "${VALKEY_EXTERNAL_PORT:-16379}:6379"
+    volumes:
+      - omnicursor_valkey_data:/data
+    networks:
+      omninode:
+        aliases:
+          - omnibase-infra-valkey
+          - valkey
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli $${VALKEY_PASSWORD:+-a \"$$VALKEY_PASSWORD\" --no-auth-warning} ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  intelligence-reducer:
+    build:
+      context: "https://github.com/OmniNode-ai/omniintelligence.git#${OMNIINTELLIGENCE_REF:-main}"
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        RUN apt-get update && apt-get install -y --no-install-recommends \
+            git curl ca-certificates \
+            && rm -rf /var/lib/apt/lists/*
+        RUN pip install --no-cache-dir uv==0.5.0
+        COPY pyproject.toml README.md uv.lock* ./
+        COPY src/ src/
+        RUN uv pip install --system --no-cache -e .
+        ENV PYTHONPATH=/app/src
+        ENV OMNIINTELLIGENCE_ALLOW_DEFAULT_KAFKA=true
+        EXPOSE 8000
+        COPY deployment/docker/entrypoint-node.sh /entrypoint.sh
+        RUN chmod +x /entrypoint.sh
+        HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+            CMD curl -f http://localhost:8000/health || exit 1
+        ENTRYPOINT ["/entrypoint.sh"]
+        CMD ["reducer"]
+    environment:
+      <<: *intelligence-env
+      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-omnicursor-dev-postgres}@omnibase-infra-postgres:5432/omniintelligence"
+      ENABLE_LEASE_MANAGEMENT: ${ENABLE_LEASE_MANAGEMENT:-true}
+      LEASE_TIMEOUT_SECONDS: ${LEASE_TIMEOUT_SECONDS:-300}
+      MAX_RETRY_ATTEMPTS: ${MAX_RETRY_ATTEMPTS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    ports:
+      - "${INTELLIGENCE_REDUCER_PORT:-18091}:8000"
+    networks:
+      - omninode
+    restart: unless-stopped
+
+  intelligence-orchestrator:
+    build:
+      context: "https://github.com/OmniNode-ai/omniintelligence.git#${OMNIINTELLIGENCE_REF:-main}"
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        RUN apt-get update && apt-get install -y --no-install-recommends \
+            git curl ca-certificates \
+            && rm -rf /var/lib/apt/lists/*
+        RUN pip install --no-cache-dir uv==0.5.0
+        COPY pyproject.toml README.md uv.lock* ./
+        COPY src/ src/
+        RUN uv pip install --system --no-cache -e .
+        ENV PYTHONPATH=/app/src
+        ENV OMNIINTELLIGENCE_ALLOW_DEFAULT_KAFKA=true
+        EXPOSE 8000
+        COPY deployment/docker/entrypoint-node.sh /entrypoint.sh
+        RUN chmod +x /entrypoint.sh
+        HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+            CMD curl -f http://localhost:8000/health || exit 1
+        ENTRYPOINT ["/entrypoint.sh"]
+        CMD ["orchestrator"]
+    environment:
+      <<: *intelligence-env
+      MAX_CONCURRENT_WORKFLOWS: ${MAX_CONCURRENT_WORKFLOWS:-10}
+      WORKFLOW_TIMEOUT_SECONDS: ${WORKFLOW_TIMEOUT_SECONDS:-300}
+      ENABLE_CACHING: ${ENABLE_CACHING:-true}
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-300}
+      REDUCER_URL: "http://intelligence-reducer:8000"
+      VALKEY_URL: "redis://:${VALKEY_PASSWORD:-valkey-dev-password}@omnibase-infra-valkey:6379/0"
+    depends_on:
+      intelligence-reducer:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    ports:
+      - "${INTELLIGENCE_ORCHESTRATOR_PORT:-18092}:8000"
+    networks:
+      - omninode
+    restart: unless-stopped
+
+  quality-scoring-compute:
+    build:
+      context: "https://github.com/OmniNode-ai/omniintelligence.git#${OMNIINTELLIGENCE_REF:-main}"
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        ARG NODE_NAME
+        ENV NODE_NAME=$${NODE_NAME}
+        WORKDIR /app
+        RUN apt-get update && apt-get install -y --no-install-recommends \
+            git curl ca-certificates \
+            && rm -rf /var/lib/apt/lists/*
+        RUN pip install --no-cache-dir uv==0.5.0
+        COPY pyproject.toml README.md uv.lock* ./
+        COPY src/ src/
+        RUN uv pip install --system --no-cache -e .
+        ENV PYTHONPATH=/app/src
+        ENV OMNIINTELLIGENCE_ALLOW_DEFAULT_KAFKA=true
+        EXPOSE 8000
+        COPY deployment/docker/entrypoint-node.sh /entrypoint.sh
+        RUN chmod +x /entrypoint.sh
+        HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+            CMD curl -f http://localhost:8000/health || exit 1
+        ENTRYPOINT ["/entrypoint.sh"]
+        CMD ["compute"]
+      args:
+        NODE_NAME: quality_scoring_compute
+    environment:
+      <<: *intelligence-env
+      ONEX_VALIDATION_ENABLED: ${ONEX_VALIDATION_ENABLED:-true}
+      GENERATE_RECOMMENDATIONS: ${GENERATE_RECOMMENDATIONS:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    ports:
+      - "${QUALITY_SCORING_COMPUTE_PORT:-18093}:8000"
+    networks:
+      - omninode
+    restart: unless-stopped
+
+  qdrant:
+    profiles: ["memory"]
+    image: qdrant/qdrant:${QDRANT_VERSION:-v1.16.3}
+    ports:
+      - "${QDRANT_HTTP_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__SERVICE__HOST: 0.0.0.0
+      QDRANT__STORAGE__STORAGE_PATH: /qdrant/storage
+      QDRANT__STORAGE__ON_DISK_PAYLOAD: true
+      QDRANT__LOG_LEVEL: INFO
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-}
+    volumes:
+      - omnicursor_qdrant_data:/qdrant/storage
+      - omnicursor_qdrant_snapshots:/qdrant/snapshots
+    networks:
+      omninode:
+        aliases:
+          - omnimemory-qdrant
+          - qdrant
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/6333 && echo -e 'GET /readyz HTTP/1.1\\r\\nHost: localhost:6333\\r\\n\\r\\n' >&3 && timeout 2 cat <&3 | grep -q 'ready'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  memgraph:
+    profiles: ["memory"]
+    image: memgraph/memgraph:${MEMGRAPH_VERSION:-2.18.1}
+    command:
+      - --storage-snapshot-retention-count=2
+      - --storage-wal-enabled=true
+      - --storage-snapshot-interval-sec=3600
+      - --bolt-port=7687
+    ports:
+      - "${MEMGRAPH_BOLT_PORT:-7687}:7687"
+      - "${MEMGRAPH_HTTP_PORT:-7444}:7444"
+    environment:
+      MEMGRAPH_BOLT_PORT: 7687
+      MEMGRAPH_HTTP_PORT: 7444
+      MEMGRAPH_MEMORY_LIMIT: ${MEMGRAPH_MEMORY_LIMIT_MB:-4096}
+    volumes:
+      - omnicursor_memgraph_data:/var/lib/memgraph
+    networks:
+      omninode:
+        aliases:
+          - omnimemory-memgraph
+          - memgraph
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'RETURN 1;' | mgconsole --host localhost --port 7687 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  kreuzberg-parser:
+    profiles: ["memory"]
+    image: ghcr.io/kreuzberg-dev/kreuzberg:core
+    ports:
+      - "${KREUZBERG_PORT:-8090}:8000"
+    networks:
+      omninode:
+        aliases:
+          - omnimemory-kreuzberg-parser
+          - kreuzberg-parser
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+networks:
+  omninode:
+    name: omnicursor-omninode-network
+
+volumes:
+  omnicursor_postgres_data:
+  omnicursor_valkey_data:
+  omnicursor_qdrant_data:
+  omnicursor_qdrant_snapshots:
+  omnicursor_memgraph_data:

@@ -17,6 +17,9 @@ dependencies = [
 dev = [
   "pytest>=8.0.0",
 ]
+mcp = [
+  "mcp>=1.26.0,<2.0.0",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "omnicursor-omnimarket": {
+      "command": "/Users/jirustaroure/Desktop/OmniCursor/.venv/bin/python",
+      "args": ["-m", "omnicursor.mcp.omnimarket_bridge_server"],
+      "cwd": "/Users/jirustaroure/Desktop/OmniCursor",
+      "env": {
+        "PYTHONPATH": "/Users/jirustaroure/Desktop/OmniCursor/src",
+        "OMNIMARKET_ROOT": "/Users/jirustaroure/Desktop/OmniCursor/omnimarket-main"
+      }
+    }
+  }
+}
