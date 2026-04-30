@@ -1022,3 +1022,252 @@ class TestRecapInjection:
         _mod.main()
         system_msg = json.loads(out.getvalue().strip()).get("systemMessage", "")
         assert "Session Recap" not in system_msg
+
+
+# ---------------------------------------------------------------------------
+# Seed pattern fallback
+# ---------------------------------------------------------------------------
+
+
+class TestSeedPatternFallback:
+    """When LEARNED_PATTERNS_FILE is absent, the hook loads from SEED_PATTERNS_FILE."""
+
+    def test_seed_file_loaded_when_user_file_missing(
+        self, tmp_path: Path, fake_sessions: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Seed file warms the cache when ~/.omnicursor/learned_patterns.json absent."""
+        seed = tmp_path / "seed.json"
+        seed.write_text(json.dumps({"patterns": [
+            {"pattern_id": "s1", "domain": "general", "description": "use git bisect", "pattern": "bisect git", "weight": 0.75, "success_count": 1, "last_seen": 0},
+        ]}))
+        absent = tmp_path / "missing.json"
+        # Point LEARNED_PATTERNS_FILE at non-existent path, SEED at seed file.
+        monkeypatch.setattr(_mod, "LEARNED_PATTERNS_FILE", absent)
+        monkeypatch.setattr(_mod, "SEED_PATTERNS_FILE", seed)
+        # Reset cache state so warm_from_json is called.
+        from omnicursor.pattern_cache import PatternCache
+        fresh_cache = PatternCache()
+        monkeypatch.setattr(_mod, "get_pattern_cache", lambda: fresh_cache)
+        payload = {"prompt": "use git bisect to find regression", "conversation_id": "seed-test-001"}
+        monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
+        out = io.StringIO()
+        monkeypatch.setattr(sys, "stdout", out)
+        _mod.main()
+        assert fresh_cache.is_warm()
+
+    def test_user_file_takes_precedence_over_seed(
+        self, tmp_path: Path, fake_sessions: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """When both files exist, LEARNED_PATTERNS_FILE is used, not seed."""
+        user_file = tmp_path / "learned.json"
+        user_file.write_text(json.dumps({"patterns": [
+            {"pattern_id": "u1", "domain": "general", "description": "user pattern", "pattern": "user pattern", "weight": 0.8, "success_count": 5, "last_seen": 0},
+        ]}))
+        seed = tmp_path / "seed.json"
+        seed.write_text(json.dumps({"patterns": [
+            {"pattern_id": "s1", "domain": "general", "description": "seed pattern", "pattern": "seed pattern", "weight": 0.75, "success_count": 1, "last_seen": 0},
+        ]}))
+        monkeypatch.setattr(_mod, "LEARNED_PATTERNS_FILE", user_file)
+        monkeypatch.setattr(_mod, "SEED_PATTERNS_FILE", seed)
+        from omnicursor.pattern_cache import PatternCache
+        fresh_cache = PatternCache()
+        monkeypatch.setattr(_mod, "get_pattern_cache", lambda: fresh_cache)
+        payload = {"prompt": "hello", "conversation_id": "seed-test-002"}
+        monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
+        monkeypatch.setattr(sys, "stdout", io.StringIO())
+        _mod.main()
+        patterns = fresh_cache.get("general")
+        descriptions = [p.get("description") for p in patterns]
+        assert "user pattern" in descriptions
+        assert "seed pattern" not in descriptions
+
+    def test_seed_file_is_valid_json(self) -> None:
+        """The committed seed file parses cleanly and has expected structure."""
+        import json as _json
+        seed_path = _ROOT / ".cursor" / "hooks" / "data" / "seed_patterns.json"
+        assert seed_path.is_file(), "seed_patterns.json must exist in repo"
+        data = _json.loads(seed_path.read_text(encoding="utf-8"))
+        assert "patterns" in data
+        assert isinstance(data["patterns"], list)
+        assert len(data["patterns"]) >= 3
+
+    def test_seed_patterns_have_required_fields(self) -> None:
+        import json as _json
+        seed_path = _ROOT / ".cursor" / "hooks" / "data" / "seed_patterns.json"
+        data = _json.loads(seed_path.read_text(encoding="utf-8"))
+        for p in data["patterns"]:
+            assert "domain" in p, f"Missing 'domain' in seed pattern: {p}"
+            assert "description" in p, f"Missing 'description' in seed pattern: {p}"
+            assert "weight" in p, f"Missing 'weight' in seed pattern: {p}"
+
+
+# ---------------------------------------------------------------------------
+# Prior session context (session summary feedback loop)
+# ---------------------------------------------------------------------------
+
+
+class TestPriorSessionContext:
+    """_load_prior_session_summary and build_context prior_summary injection."""
+
+    def _make_summary(self, tmp_path: Path, conv_id: str, **kwargs: Any) -> Path:
+        data = {
+            "conversation_id": conv_id,
+            "session_outcome": "success",
+            "session_outcome_reason": "Completed planned work",
+            "files_edited": 4,
+            "languages": ["python", "typescript"],
+            "prompts_classified": 6,
+            "last_prompt_at": "2026-04-28T14:30:00+00:00",
+            **kwargs,
+        }
+        path = tmp_path / f"{conv_id}.json"
+        path.write_text(json.dumps(data))
+        return path
+
+    # _load_prior_session_summary ---
+
+    def test_returns_none_when_no_sessions(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", tmp_path)
+        result = _mod._load_prior_session_summary("new-conv")
+        assert result is None
+
+    def test_returns_summary_for_existing_session(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", tmp_path)
+        self._make_summary(tmp_path, "old-conv-001")
+        result = _mod._load_prior_session_summary("new-conv")
+        assert result is not None
+        assert result["conversation_id"] == "old-conv-001"
+
+    def test_excludes_current_conversation(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", tmp_path)
+        self._make_summary(tmp_path, "same-conv")
+        result = _mod._load_prior_session_summary("same-conv")
+        assert result is None
+
+    def test_excludes_current_json(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", tmp_path)
+        (tmp_path / "current.json").write_text(json.dumps({"conversation_id": "active"}))
+        result = _mod._load_prior_session_summary("new-conv")
+        assert result is None
+
+    def test_returns_most_recent_when_multiple(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", tmp_path)
+        old = self._make_summary(tmp_path, "old-conv")
+        import time as _time
+        _time.sleep(0.01)
+        new = self._make_summary(tmp_path, "new-conv-prior")  # noqa: F841
+        result = _mod._load_prior_session_summary("current-conv")
+        assert result is not None
+        assert result["conversation_id"] == "new-conv-prior"
+
+    def test_returns_none_on_malformed_json(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", tmp_path)
+        (tmp_path / "bad-conv.json").write_text("not json {{")
+        result = _mod._load_prior_session_summary("new-conv")
+        assert result is None
+
+    # build_context with prior_summary ---
+
+    def test_prior_section_absent_when_none(
+        self, fake_sessions: Path, conv_id: str
+    ) -> None:
+        out = _mod.build_context("agent", 0.8, "r", [], "prompt", conv_id, prior_summary=None)
+        assert "Prior Session Context" not in out
+
+    def test_prior_section_present_when_given(
+        self, fake_sessions: Path, conv_id: str
+    ) -> None:
+        summary = {"session_outcome": "success", "files_edited": 3, "languages": ["python"], "prompts_classified": 5}
+        out = _mod.build_context("agent", 0.8, "r", [], "prompt", conv_id, prior_summary=summary)
+        assert "## Prior Session Context" in out
+
+    def test_prior_section_shows_outcome(
+        self, fake_sessions: Path, conv_id: str
+    ) -> None:
+        summary = {"session_outcome": "success", "files_edited": 2, "languages": [], "prompts_classified": 3}
+        out = _mod.build_context("agent", 0.8, "r", [], "prompt", conv_id, prior_summary=summary)
+        assert "success" in out
+
+    def test_prior_section_shows_files_edited(
+        self, fake_sessions: Path, conv_id: str
+    ) -> None:
+        summary = {"session_outcome": "success", "files_edited": 7, "languages": [], "prompts_classified": 4}
+        out = _mod.build_context("agent", 0.8, "r", [], "prompt", conv_id, prior_summary=summary)
+        assert "7" in out
+
+    def test_prior_section_shows_languages(
+        self, fake_sessions: Path, conv_id: str
+    ) -> None:
+        summary = {"session_outcome": "success", "files_edited": 1, "languages": ["python", "typescript"], "prompts_classified": 2}
+        out = _mod.build_context("agent", 0.8, "r", [], "prompt", conv_id, prior_summary=summary)
+        assert "python" in out
+        assert "typescript" in out
+
+    def test_prior_section_header_marker(
+        self, fake_sessions: Path, conv_id: str
+    ) -> None:
+        summary = {"session_outcome": "success", "files_edited": 1, "languages": [], "prompts_classified": 1}
+        out = _mod.build_context("agent", 0.8, "r", [], "prompt", conv_id, prior_summary=summary)
+        assert "<!-- OmniCursor: prior_session=injected -->" in out
+
+    def test_no_header_marker_when_no_prior_summary(
+        self, fake_sessions: Path, conv_id: str
+    ) -> None:
+        out = _mod.build_context("agent", 0.8, "r", [], "prompt", conv_id, prior_summary=None)
+        assert "prior_session=injected" not in out
+
+    # main() integration ---
+
+    def test_prior_summary_injected_on_first_prompt(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        sessions = tmp_path / "sessions"
+        sessions.mkdir()
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", sessions)
+        monkeypatch.setattr(_mod, "ensure_dirs", lambda: None)
+        monkeypatch.setattr(_mod, "log_event", lambda _: None)
+        # Write a prior session summary
+        prior = {"conversation_id": "prior-conv", "session_outcome": "success",
+                 "files_edited": 2, "languages": ["python"], "prompts_classified": 3}
+        (sessions / "prior-conv.json").write_text(json.dumps(prior))
+        payload = {"prompt": "start new work", "conversation_id": "first-new-conv"}
+        monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
+        out = io.StringIO()
+        monkeypatch.setattr(sys, "stdout", out)
+        _mod.main()
+        msg = json.loads(out.getvalue().strip())["systemMessage"]
+        assert "Prior Session Context" in msg
+
+    def test_prior_summary_not_injected_on_subsequent_prompts(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        sessions = tmp_path / "sessions"
+        sessions.mkdir()
+        monkeypatch.setattr(_mod, "SESSIONS_DIR", sessions)
+        monkeypatch.setattr(_mod, "ensure_dirs", lambda: None)
+        monkeypatch.setattr(_mod, "log_event", lambda _: None)
+        prior = {"conversation_id": "prior-conv2", "session_outcome": "success",
+                 "files_edited": 1, "languages": [], "prompts_classified": 2}
+        (sessions / "prior-conv2.json").write_text(json.dumps(prior))
+        conv = "repeat-conv-001"
+        for i in range(2):
+            payload = {"prompt": f"prompt {i}", "conversation_id": conv}
+            monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
+            out = io.StringIO()
+            monkeypatch.setattr(sys, "stdout", out)
+            _mod.main()
+            if i == 1:
+                msg = json.loads(out.getvalue().strip())["systemMessage"]
+                assert "Prior Session Context" not in msg

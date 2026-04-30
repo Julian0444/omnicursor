@@ -47,6 +47,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from _common import (
     LEARNED_PATTERNS_FILE,
+    SEED_PATTERNS_FILE,
     SESSIONS_DIR,
     ensure_dirs,
     load_agent_configs,
@@ -233,6 +234,27 @@ def _bump_session_prompt_timestamp(conversation_id: str) -> None:
     merge_session_json(conversation_id, {"last_prompt_at": now}, sessions_root=SESSIONS_DIR)
 
 
+def _load_prior_session_summary(current_conv_id: str) -> Optional[Dict[str, Any]]:
+    """Return the most recent completed session summary, excluding the current conversation.
+
+    Scans SESSIONS_DIR for *.json files (not current.json, not current conv).
+    Returns the parsed dict of the most recently modified file, or None.
+    Only called on the first prompt of a new session.
+    """
+    try:
+        candidates = [
+            p for p in SESSIONS_DIR.glob("*.json")
+            if p.name != "current.json" and p.stem != current_conv_id
+        ]
+        if not candidates:
+            return None
+        latest = max(candidates, key=lambda p: p.stat().st_mtime)
+        data = json.loads(latest.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else None
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Per-turn state reset (delegation rule)
 # ---------------------------------------------------------------------------
@@ -339,6 +361,7 @@ def build_context(
     agent_config: Optional[Dict[str, Any]] = None,
     correlation_id: str = "",
     delegation_required: bool = False,
+    prior_summary: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Build the systemMessage injected by Cursor before the model responds.
 
@@ -439,6 +462,30 @@ def build_context(
         )
         sections.append(nudge)
 
+    # --- Section 4: Prior session context (first prompt of a new session only) ---
+    if prior_summary:
+        outcome = prior_summary.get("session_outcome", "unknown")
+        files_edited = prior_summary.get("files_edited", 0)
+        langs = prior_summary.get("languages", [])
+        lang_str = ", ".join(langs) if langs else "none"
+        prompts_n = prior_summary.get("prompts_classified", 0)
+        last_at = prior_summary.get("last_prompt_at", "")
+
+        prior_lines = [
+            "## Prior Session Context",
+            "",
+            "**Outcome:** {}  ".format(outcome),
+            "**Files edited:** {}  ".format(files_edited),
+            "**Languages:** {}  ".format(lang_str),
+            "**Prompts:** {}  ".format(prompts_n),
+        ]
+        if last_at:
+            prior_lines.append(
+                "**Last active:** {}  ".format(last_at[:19].replace("T", " "))
+            )
+        sections.append("\n".join(prior_lines))
+        header_lines.append("<!-- OmniCursor: prior_session=injected -->")
+
     body = "\n\n---\n\n".join(sections)
     header = "\n".join(header_lines)
     return header + "\n\n" + body
@@ -461,6 +508,7 @@ def main() -> None:
     agent_config: Dict[str, Any] = {}
     correlation_id = _generate_correlation_id()
     delegation_required = False
+    prior_summary: Optional[Dict[str, Any]] = None
 
     try:
         data = read_stdin()
@@ -481,13 +529,17 @@ def main() -> None:
         first_prompt = _init_session(conversation_id)
         if not first_prompt:
             _bump_session_prompt_timestamp(conversation_id)
+        else:
+            prior_summary = _load_prior_session_summary(conversation_id)
         _update_session_correlation(conversation_id, correlation_id)
         reset_turn_state(conversation_id)
 
         # Pattern loading with relevance filtering.
+        # Fall back to repo seed file when the user file doesn't exist yet.
         cache = get_pattern_cache()
         if not cache.is_warm() or cache.is_stale():
-            cache.warm_from_json(LEARNED_PATTERNS_FILE)
+            source = LEARNED_PATTERNS_FILE if LEARNED_PATTERNS_FILE.exists() else SEED_PATTERNS_FILE
+            cache.warm_from_json(source)
         domain = _agent_domain(agent_name)
         raw = cache.get(domain) or cache.get("general") or []
         prompt_words_set = prompt_keyword_set(prompt)
@@ -566,6 +618,7 @@ def main() -> None:
         agent_config=agent_config,
         correlation_id=correlation_id,
         delegation_required=delegation_required,
+        prior_summary=prior_summary,
     ))
 
 
