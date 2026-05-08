@@ -153,3 +153,20 @@ ruff check src/ tests/ .cursor/hooks/
 ```
 
 CI runs the same checks on every PR to `main`.
+
+---
+
+## Privacy — what OmniCursor stores locally
+
+OmniCursor writes session data to two files under `~/.omnicursor/`:
+
+**`~/.omnicursor/events.jsonl`** — structured log of every hook event (prompt classifications, shell guard decisions, edit lint results, session outcomes). Contains the prompt text that was submitted to the router and the agent/confidence result.
+
+**`~/.omnicursor/learned_patterns.json`** — the pattern learning cache. Each record stores:
+- `key`: a sorted keyword fingerprint extracted from the prompt (e.g. `"debug fix test TypeError"`) — not the full prompt
+- `description`: `"Auto-learned: <first 60 chars of prompt> → <agent> (score X.XX)"` — captures up to 60 characters of prompt content
+- `domain`, `weight`, `success_count`, `injection_count`, `utilization_successes`, `last_seen`
+
+**The description field captures prompt content.** If your prompts contain secrets, credentials, PII, or sensitive project names, that content may appear in `learned_patterns.json`. OmniCursor does not transmit this file anywhere — it is read-only local storage unless you explicitly enable `OMNICURSOR_PATTERN_SYNC_HTTP=1` (off by default), which pulls updated patterns from a local intelligence-reducer service but does not upload your local file.
+
+If you are working with sensitive material, avoid typing it directly into prompts or clear `~/.omnicursor/learned_patterns.json` periodically.
