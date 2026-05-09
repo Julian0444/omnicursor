@@ -93,10 +93,12 @@ def run(
         remote_patterns = _patterns_from_response(body)
         normalized: dict[str, Any] = {"patterns": _merge_patterns(local_patterns, remote_patterns)}
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(
             json.dumps(normalized, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
+        os.replace(tmp, path)
         return True
     except (OSError, urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, TypeError):
         return False

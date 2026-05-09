@@ -15,11 +15,10 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
-_hooks = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(_hooks / "lib"))
-sys.path.insert(0, str(_hooks.parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
-from _common import (  # noqa: E402
+from _common import (
     EVENTS_LOG,
     LEARNED_PATTERNS_FILE,
     SESSIONS_DIR,
@@ -30,10 +29,10 @@ from _common import (  # noqa: E402
     read_stdin,
     write_stdout,
 )
-from emit_client import send_event  # noqa: E402
-from omnicursor.pattern_writer import write_session_patterns  # noqa: E402
-from omnicursor.session_outcome import derive_session_outcome, format_recap  # noqa: E402
-from pattern_sync import sync_learned_patterns  # noqa: E402
+from emit_client import send_event
+from omnicursor.pattern_writer import write_session_patterns
+from omnicursor.session_outcome import derive_session_outcome, format_recap
+from omnicursor.sync.pattern_sync import run as sync_learned_patterns
 
 _RECAP_PATH: Path = Path.home() / ".omnicursor" / "last-recap.md"
 
