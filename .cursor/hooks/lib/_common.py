@@ -40,6 +40,7 @@ OMNICURSOR_DIR: Path = Path.home() / ".omnicursor"
 EVENTS_LOG: Path = OMNICURSOR_DIR / "events.jsonl"
 SESSIONS_DIR: Path = OMNICURSOR_DIR / "sessions"
 LEARNED_PATTERNS_FILE: Path = OMNICURSOR_DIR / "learned_patterns.json"
+SEED_PATTERNS_FILE: Path = HOOKS_DIR / "data" / "seed_patterns.json"
 
 
 # ---------------------------------------------------------------------------

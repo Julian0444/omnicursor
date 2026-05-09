@@ -22,7 +22,7 @@ from _common import (  # noqa: E402
     read_stdin,
     write_stdout,
 )
-from omnicursor.file_edit import detect_language, handle_edit, run_ruff_check  # noqa: E402, F401
+from omnicursor.file_edit import detect_language, handle_edit, run_ruff_check, run_tsc_check  # noqa: E402, F401
 
 
 def main() -> None:

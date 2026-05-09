@@ -118,11 +118,11 @@ class TestRuffDiagnostics:
         assert "ruff" in calls[0]
 
     def test_non_python_file_skips_ruff(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Original stub: non-Python file never calls ruff."""
+        """Non-Python file never calls ruff (tsc may still fire for .ts)."""
         calls: List[Any] = []
         monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or _FakeRunResult())
         _mod.handle_edit({"file_path": "foo.ts", "edits": []})
-        assert len(calls) == 0
+        assert all("ruff" not in cmd for cmd in calls)
 
     def test_ruff_never_runs_fix_flag(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Original stub: ruff must never be called with --fix."""
@@ -183,7 +183,82 @@ class TestRuffDiagnostics:
         monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or _FakeRunResult())
         result = _mod.handle_edit({"file_path": "foo.ts", "edits": []})
         assert result["ruff_findings"] == 0
-        assert len(calls) == 0
+
+
+# ---------------------------------------------------------------------------
+# TSC diagnostics
+# ---------------------------------------------------------------------------
+
+
+class TestTscDiagnostics:
+    def test_typescript_file_triggers_tsc_check(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: List[Any] = []
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or _FakeRunResult())
+        _mod.handle_edit({"file_path": "foo.ts", "edits": []})
+        assert len(calls) == 1
+        assert "tsc" in calls[0]
+
+    def test_tsx_file_triggers_tsc_check(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: List[Any] = []
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or _FakeRunResult())
+        _mod.handle_edit({"file_path": "comp.tsx", "edits": []})
+        assert len(calls) == 1
+        assert "tsc" in calls[0]
+
+    def test_non_typescript_file_skips_tsc(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: List[Any] = []
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or _FakeRunResult())
+        _mod.handle_edit({"file_path": "foo.py", "edits": []})
+        assert all("tsc" not in cmd for cmd in calls)
+
+    def test_tsc_called_with_no_emit(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: List[Any] = []
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or _FakeRunResult())
+        _mod.run_tsc_check("foo.ts")
+        assert "--noEmit" in calls[0]
+
+    def test_tsc_findings_counted(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        output = (
+            "foo.ts(1,5): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+            "foo.ts(3,9): error TS2304: Cannot find name 'bar'.\n"
+        )
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: _FakeRunResult(stdout=output, returncode=1))
+        result = _mod.run_tsc_check("foo.ts")
+        assert result == 2
+
+    def test_tsc_findings_zero_on_clean_file(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: _FakeRunResult(stdout="", returncode=0))
+        result = _mod.run_tsc_check("foo.ts")
+        assert result == 0
+
+    def test_tsc_not_found_returns_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            _file_edit.subprocess, "run",
+            lambda cmd, **kw: (_ for _ in ()).throw(FileNotFoundError("tsc")),
+        )
+        result = _mod.run_tsc_check("foo.ts")
+        assert result == 0
+
+    def test_tsc_timeout_returns_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            _file_edit.subprocess, "run",
+            lambda cmd, **kw: (_ for _ in ()).throw(subprocess.TimeoutExpired("tsc", 15)),
+        )
+        result = _mod.run_tsc_check("foo.ts")
+        assert result == 0
+
+    def test_tsc_findings_reflected_in_handle_edit(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        output = "foo.ts(1,5): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: _FakeRunResult(stdout=output, returncode=1))
+        result = _mod.handle_edit({"file_path": "foo.ts", "edits": []})
+        assert result["tsc_findings"] == 1
+
+    def test_non_typescript_tsc_findings_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: List[Any] = []
+        monkeypatch.setattr(_file_edit.subprocess, "run", lambda cmd, **kw: calls.append(cmd) or _FakeRunResult())
+        result = _mod.handle_edit({"file_path": "foo.py", "edits": []})
+        assert result["tsc_findings"] == 0
+        assert all("tsc" not in cmd for cmd in calls)
 
 
 # ---------------------------------------------------------------------------
@@ -326,6 +401,13 @@ class TestTypedEventSchema:
 
     def test_event_has_ruff_findings(self, monkeypatch: pytest.MonkeyPatch) -> None:
         assert "ruff_findings" in self._run(monkeypatch)
+
+    def test_event_has_tsc_findings(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        assert "tsc_findings" in self._run(monkeypatch)
+
+    def test_tsc_findings_zero_for_non_typescript(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        e = self._run(monkeypatch, file_path="foo.py")
+        assert e["tsc_findings"] == 0
 
     def test_event_has_hook_duration_ms(self, monkeypatch: pytest.MonkeyPatch) -> None:
         e = self._run(monkeypatch)

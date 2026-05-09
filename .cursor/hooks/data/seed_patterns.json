@@ -1,0 +1,50 @@
+{
+  "_note": "Starter-kit patterns — injected when ~/.omnicursor/learned_patterns.json does not yet exist. Replace with real learned patterns after first successful session.",
+  "patterns": [
+    {
+      "pattern_id": "seed-debug-001",
+      "pattern": "bisect commit git regression",
+      "domain": "debug_intelligence",
+      "description": "Use git bisect to isolate the commit that introduced a regression before attempting a fix",
+      "weight": 0.75,
+      "success_count": 3,
+      "last_seen": 1777440000
+    },
+    {
+      "pattern_id": "seed-python-001",
+      "pattern": "endpoint fastapi model pydantic",
+      "domain": "python_fastapi_expert",
+      "description": "Define Pydantic response models for all FastAPI endpoints before writing any handler logic",
+      "weight": 0.75,
+      "success_count": 3,
+      "last_seen": 1777440000
+    },
+    {
+      "pattern_id": "seed-testing-001",
+      "pattern": "code failing implement minimal test",
+      "domain": "testing",
+      "description": "Write a failing test first, then implement the minimal code required to make it pass",
+      "weight": 0.75,
+      "success_count": 3,
+      "last_seen": 1777440000
+    },
+    {
+      "pattern_id": "seed-pr-001",
+      "pattern": "async error exception handling paths",
+      "domain": "pr_review",
+      "description": "Review async error-handling paths for missing exception types and unhandled edge cases before approving",
+      "weight": 0.75,
+      "success_count": 3,
+      "last_seen": 1777440000
+    },
+    {
+      "pattern_id": "seed-general-001",
+      "pattern": "affected enumerate files multi edits",
+      "domain": "general",
+      "description": "Enumerate all affected files before starting multi-file edits to avoid missed dependencies",
+      "weight": 0.75,
+      "success_count": 3,
+      "last_seen": 1777440000
+    }
+  ]
+}

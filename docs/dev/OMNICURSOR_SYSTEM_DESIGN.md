@@ -43,6 +43,7 @@ flowchart TB
 
   HP & HS & HE & HO --> E
   HP --> P
+  HO --> P
   HO --> S
 
   subgraph Lib["Repo: Python library (not in hook process)"]
@@ -103,6 +104,49 @@ flowchart LR
 ```
 
 Solid arrows: primary OmniCursor flows. Dotted arrows: **optional** integration paths.
+
+---
+
+## 3. Intelligence layer — local pattern learning (Option A)
+
+The pattern learning loop runs entirely in hooks using stdlib only. No external services required.
+
+```
+on_prompt.py (beforeSubmitPrompt)
+  └── pattern_loader.py reads ~/.omnicursor/learned_patterns.json
+  └── injects top-5 most relevant patterns into system message
+
+on_stop.py (stop)
+  └── derive_session_outcome() → "success" / "failed" / "abandoned" / "unknown"
+  └── on "success": pattern_writer.write_session_patterns(events, outcome)
+        ├── extracts prompt_classified events to identify injected patterns
+        ├── upserts each domain pattern with weight increment
+        │     └── if pattern was injected this session: weight × 1.5 multiplier
+        │         (injection_count += 1, utilization_successes += 1)
+        ├── evicts low-utility patterns: injection_count > 10 AND success_rate < 0.2
+        └── evicts overflow: keeps at most 20 patterns per domain (lowest weight removed)
+```
+
+### Pattern record schema
+
+Each entry in `~/.omnicursor/learned_patterns.json`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | string | Sorted keyword fingerprint (e.g. `"debug fix test TypeError"`) |
+| `domain` | string | Agent category (`debugging`, `brainstorming`, etc.) |
+| `weight` | float | Relevance score; decays over time, boosted on successful sessions |
+| `success_count` | int | Sessions where outcome was `success` |
+| `injection_count` | int | Times this pattern was injected into a prompt |
+| `utilization_successes` | int | Times injected AND session outcome was `success` |
+| `last_seen` | ISO timestamp | Last time this pattern was written |
+| `description` | string | `"Auto-learned: <60-char prompt snippet> → <agent> (score X.XX)"` |
+
+### Honest tradeoff
+
+The utilization signal is `session_outcome == success AND pattern_was_injected`. That is **correlation, not utilization** — it cannot determine whether the AI's response actually referenced the injected pattern. A pattern that gets injected on every session and is always ignored will still accumulate `utilization_successes` if those sessions happen to end in success.
+
+This closes the "no signal at all" gap. The full gap (verified LLM utilization) requires an LLM check of whether the response referenced the pattern text, which is scoped under Option B as a sub-task of the quality-scoring-compute node.
 
 ---
 

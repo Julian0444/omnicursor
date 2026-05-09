@@ -1,0 +1,102 @@
+prompt_text,expected_agent,notes
+"help me debug this failing test",debug-intelligence,exact trigger: debug
+"there's an error in my API endpoint",debug-intelligence,exact trigger: error
+"troubleshoot why my service keeps crashing",debug-intelligence,exact trigger: troubleshoot
+"find the root cause of this regression",debug-intelligence,exact trigger: root cause
+"I'm getting a traceback in the auth module",debug-intelligence,exact trigger: traceback
+"investigate the bug in the payment flow",debug-intelligence,exact trigger: bug
+"write unit tests for my new service",testing,exact trigger: unit tests
+"add integration tests to the auth module",testing,exact trigger: integration tests
+"improve test coverage for this file",testing,keyword: test + coverage
+"help me validate this edge case",testing,exact trigger: validate
+"create a test strategy for this feature",testing,exact trigger: test strategy
+"run quality assurance on the new module",testing,exact trigger: quality assurance
+"review this pull request",pr-review,exact trigger: pull request
+"do a code review on my changes",pr-review,exact trigger: code review
+"check merge readiness for this branch",pr-review,exact trigger: merge readiness
+"assess the PR before I merge",pr-review,exact trigger: assess pr
+"review these changes before shipping",pr-review,exact trigger: review changes
+"check this code meets our standards",pr-review,exact trigger: standards review
+"address the comments from the PR review",address-pr-comments,exact trigger: address pr comments
+"fix the review feedback on my PR",address-pr-comments,exact trigger: fix review feedback
+"resolve the comments my reviewer left",address-pr-comments,exact trigger: resolve pr comments
+"update the PR based on the feedback",address-pr-comments,exact trigger: update pr
+"apply the review feedback to my branch",address-pr-comments,keyword: feedback + review
+"handle the remaining review comments",address-pr-comments,keyword: resolve + comments + review
+"optimize the performance of this endpoint",performance,exact trigger: performance
+"this function is too slow, fix it",performance,exact trigger: slow
+"find the bottleneck in my request pipeline",performance,exact trigger: bottleneck
+"profile the database query execution",performance,exact trigger: profiling
+"reduce the latency on this API call",performance,exact trigger: latency
+"benchmark this sorting algorithm",performance,exact trigger: benchmark
+"audit the security of this authentication system",security-audit,exact trigger: audit
+"check for SQL injection vulnerabilities",security-audit,keyword: vulnerability + injection
+"run a security scan on this module",security-audit,exact trigger: security scan
+"do a threat model for the new payment feature",security-audit,exact trigger: threat model
+"assess the risk of exposing this endpoint",security-audit,keyword: risk + security
+"check for vulnerabilities in the API",security-audit,keyword: vulnerability + security
+"write documentation for this REST API",documentation-architect,exact trigger: documentation
+"generate API docs for the new endpoints",documentation-architect,exact trigger: api docs
+"create a README for this module",documentation-architect,keyword: documentation + readme
+"improve the developer experience for this library",documentation-architect,exact trigger: developer experience
+"write technical documentation for onboarding",documentation-architect,keyword: documentation + guide
+"update the knowledge management system docs",documentation-architect,exact trigger: knowledge management
+"build a React component for the dashboard",frontend-developer,exact trigger: react
+"add TypeScript types to this component",frontend-developer,exact trigger: typescript
+"implement a responsive UI for mobile",frontend-developer,exact trigger: responsive design
+"create a new frontend component with state",frontend-developer,exact trigger: create component
+"build the user interface for the settings page",frontend-developer,exact trigger: build interface
+"develop a data visualization dashboard",frontend-developer,exact trigger: build dashboard
+"optimize this Python async function",python-fastapi-expert,exact trigger: async
+"add a FastAPI endpoint for user registration",python-fastapi-expert,exact trigger: fastapi
+"define a Pydantic model for the request body",python-fastapi-expert,exact trigger: pydantic
+"implement backend authentication with Python",python-fastapi-expert,exact trigger: backend development
+"speed up this Python service",python-fastapi-expert,exact trigger: python optimization
+"refactor this async route handler",python-fastapi-expert,keyword: async + python + backend
+"debug the slow database query",debug-database,exact trigger: database debug
+"optimize this SQL query for performance",debug-database,exact trigger: sql performance
+"troubleshoot the database connection timeout",debug-database,exact trigger: db connection issue
+"analyze why the query is running slowly",debug-database,keyword: database + query + sql
+"fix the database performance degradation",debug-database,exact trigger: database performance
+"investigate the schema index bottleneck",debug-database,keyword: database + index + schema
+"write a commit message for my changes",commit,exact trigger: commit message
+"generate a semantic commit for this fix",commit,exact trigger: semantic commit
+"create a commit for the refactored auth module",commit,exact trigger: create commit
+"help me commit these changes",commit,exact trigger: commit these changes
+"make a git commit with good message format",commit,keyword: git + commit + message
+"generate the changelog entry for this commit",commit,keyword: commit + changelog
+"summarize this long error log",content-summarizer,keyword: summarize + log
+"condense this large API response",content-summarizer,keyword: condense + summary
+"extract the key information from this document",content-summarizer,exact trigger: extract key information
+"reduce this text to the main points",content-summarizer,exact trigger: reduce text
+"make a summary of the meeting notes",content-summarizer,exact trigger: make summary
+"summarize the content of this file",content-summarizer,exact trigger: summarize content
+"analyze the structure of this repository",repository-crawler,exact trigger: analyze repository structure
+"crawl the codebase and index all modules",repository-crawler,exact trigger: crawl repository
+"map the codebase architecture",repository-crawler,exact trigger: map codebase
+"explore this repo and give me an overview",repository-crawler,exact trigger: explore repo
+"index all the files in this repository",repository-crawler,exact trigger: index codebase
+"give me codebase intelligence on this project",repository-crawler,exact trigger: codebase intelligence
+"research the best approach to implement caching",research,exact trigger: research
+"investigate how this library works internally",research,keyword: investigate + understand
+"analyze the tradeoffs between these two approaches",research,exact trigger: analysis
+"explore the patterns used in this module",research,exact trigger: explore
+"help me understand how this algorithm works",research,exact trigger: understand
+"how does the authentication flow work?",research,exact trigger: how does this work
+"check the code quality of this module",code-quality-analyzer,exact trigger: code quality
+"identify anti-patterns in my codebase",code-quality-analyzer,exact trigger: anti-patterns
+"assess if my code meets quality standards",code-quality-analyzer,exact trigger: code standards
+"find code smells in this service",code-quality-analyzer,exact trigger: code smells
+"run a quality analysis on this PR",code-quality-analyzer,exact trigger: quality analysis
+"do a quality assessment of the backend",code-quality-analyzer,exact trigger: quality assessment
+"create a handoff summary for this session",handoff-guide,exact trigger: handoff
+"write a session summary so I can continue later",handoff-guide,keyword: session + summary + continue
+"document what we did and what's left",handoff-guide,keyword: summary + remaining
+"prepare context for the next session",handoff-guide,keyword: next + session + context
+"I need to hand off this work to a teammate",handoff-guide,keyword: handoff + session
+"summarize what's left so I can pick up later",handoff-guide,keyword: remaining + continue + next
+"help me with this general coding task",polymorphic-agent,no triggers matched — fallback
+"what should I work on next?",polymorphic-agent,no triggers matched — fallback
+"improve this code",polymorphic-agent,no triggers matched — fallback (too vague)
+"make this better",polymorphic-agent,no triggers matched — fallback (too vague)
+"check this file",polymorphic-agent,no triggers matched — fallback (too vague)

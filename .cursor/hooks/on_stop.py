@@ -16,9 +16,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 import _common
 from _common import ensure_dirs, log_event, read_stdin, write_stdout
+from omnicursor.pattern_writer import write_session_patterns
 
 
 # ---------------------------------------------------------------------------
@@ -302,6 +304,13 @@ def main() -> None:
 
         if conversation_id:
             _write_session_summary(conversation_id, summary)
+
+        if summary.get("session_outcome") == "success":
+            write_session_patterns(
+                Path.home() / ".omnicursor" / "learned_patterns.json",
+                _load_events(conversation_id),
+                int(summary.get("files_edited", 0)),
+            )
     except Exception:
         pass
     write_stdout({})

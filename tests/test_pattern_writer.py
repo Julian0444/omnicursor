@@ -9,9 +9,12 @@ from omnicursor.pattern_writer import (
     HARD_FLOOR,
     INITIAL_WEIGHT,
     MAX_PATTERNS_PER_DOMAIN,
+    UTILIZATION_EVICT_MIN_INJECTIONS,
+    UTILIZATION_SUCCESS_WEIGHT_MULTIPLIER,
     WEIGHT_CAP,
     WEIGHT_INCREMENT,
     _agent_to_domain,
+    _evict_low_utilization,
     _evict_overflow,
     _upsert_pattern,
     extract_patterns_from_events,
@@ -48,6 +51,14 @@ def _prompt_event(agent: str, score: float, snippet: str) -> dict:
         "score": score,
         "prompt_snippet": snippet,
     }
+
+
+def _prompt_event_with_injection(
+    agent: str, score: float, snippet: str, patterns_injected: int,
+) -> dict:
+    event = _prompt_event(agent, score, snippet)
+    event["patterns_injected"] = patterns_injected
+    return event
 
 
 def test_extract_skips_polymorphic_agent():
@@ -106,6 +117,8 @@ def test_upsert_inserts_new_pattern():
     assert len(result) == 1
     assert result[0]["weight"] == INITIAL_WEIGHT
     assert result[0]["success_count"] == 1
+    assert result[0]["injection_count"] == 0
+    assert result[0]["utilization_successes"] == 0
     assert result[0]["domain"] == "debugging"
 
 
@@ -118,6 +131,44 @@ def test_upsert_increments_existing_pattern():
     assert updated[0]["success_count"] == 2
 
 
+def test_upsert_increments_utilization_on_successful_injection():
+    now = time.time()
+    existing = _upsert_pattern([], "debugging", ["typeerror", "line"], "desc", now)
+    updated = _upsert_pattern(
+        existing,
+        "debugging",
+        ["typeerror", "line"],
+        "desc",
+        now,
+        injected_success=True,
+    )
+    assert updated[0]["injection_count"] == 1
+    assert updated[0]["utilization_successes"] == 1
+
+
+def test_upsert_injected_success_gains_weight_faster():
+    now = time.time()
+    base = _upsert_pattern([], "debugging", ["typeerror", "line"], "desc", now)
+
+    normal = _upsert_pattern(base, "debugging", ["typeerror", "line"], "desc", now)
+    injected = _upsert_pattern(
+        base,
+        "debugging",
+        ["typeerror", "line"],
+        "desc",
+        now,
+        injected_success=True,
+    )
+
+    expected_injected_weight = round(
+        INITIAL_WEIGHT + (WEIGHT_INCREMENT * UTILIZATION_SUCCESS_WEIGHT_MULTIPLIER),
+        3,
+    )
+    assert normal[0]["weight"] == round(INITIAL_WEIGHT + WEIGHT_INCREMENT, 3)
+    assert injected[0]["weight"] == expected_injected_weight
+    assert injected[0]["weight"] > normal[0]["weight"]
+
+
 def test_upsert_caps_weight_at_max():
     now = time.time()
     patterns = [{
@@ -125,6 +176,8 @@ def test_upsert_caps_weight_at_max():
         "domain": "debugging",
         "weight": WEIGHT_CAP,
         "success_count": 10,
+        "injection_count": 0,
+        "utilization_successes": 0,
         "last_seen": now,
         "description": "desc",
     }]
@@ -147,8 +200,16 @@ def test_upsert_different_domain_creates_new():
 def test_evict_keeps_highest_weight_patterns():
     now = time.time()
     patterns = [
-        {"domain": "debugging", "pattern": f"p{i}", "weight": i * 0.05,
-         "success_count": 1, "last_seen": now, "description": ""}
+        {
+            "domain": "debugging",
+            "pattern": f"p{i}",
+            "weight": i * 0.05,
+            "success_count": 1,
+            "injection_count": 0,
+            "utilization_successes": 0,
+            "last_seen": now,
+            "description": "",
+        }
         for i in range(MAX_PATTERNS_PER_DOMAIN + 5)
     ]
     result = _evict_overflow(patterns)
@@ -156,6 +217,34 @@ def test_evict_keeps_highest_weight_patterns():
     assert len(debugging) == MAX_PATTERNS_PER_DOMAIN
     weights = [p["weight"] for p in debugging]
     assert weights == sorted(weights, reverse=True)
+
+
+def test_evict_low_utilization_removes_pattern():
+    patterns = [
+        {
+            "domain": "debugging",
+            "pattern": "evict-me",
+            "weight": 0.7,
+            "success_count": 3,
+            "injection_count": UTILIZATION_EVICT_MIN_INJECTIONS + 1,
+            "utilization_successes": 1,
+            "last_seen": time.time(),
+            "description": "",
+        },
+        {
+            "domain": "debugging",
+            "pattern": "keep-me",
+            "weight": 0.7,
+            "success_count": 3,
+            "injection_count": UTILIZATION_EVICT_MIN_INJECTIONS + 1,
+            "utilization_successes": 3,
+            "last_seen": time.time(),
+            "description": "",
+        },
+    ]
+    kept = _evict_low_utilization(patterns)
+    assert len(kept) == 1
+    assert kept[0]["pattern"] == "keep-me"
 
 
 # ---------------------------------------------------------------------------
@@ -188,6 +277,8 @@ def test_write_creates_file_with_patterns(tmp_path):
     assert len(data["patterns"]) == 1
     assert data["patterns"][0]["domain"] == "debugging"
     assert data["patterns"][0]["weight"] == INITIAL_WEIGHT
+    assert data["patterns"][0]["injection_count"] == 0
+    assert data["patterns"][0]["utilization_successes"] == 0
 
 
 def test_write_increments_on_repeated_success(tmp_path):
@@ -198,6 +289,33 @@ def test_write_increments_on_repeated_success(tmp_path):
     data = json.loads(pf.read_text())
     assert data["patterns"][0]["success_count"] == 2
     assert data["patterns"][0]["weight"] == round(INITIAL_WEIGHT + WEIGHT_INCREMENT, 3)
+
+
+def test_write_increments_utilization_successes_when_pattern_injected(tmp_path):
+    events = [_prompt_event_with_injection("debugging", 0.85, "TypeError in parser line 42", 1)]
+    pf = tmp_path / "learned_patterns.json"
+    write_session_patterns(pf, events, files_edited=1)
+    write_session_patterns(pf, events, files_edited=1)
+    data = json.loads(pf.read_text())
+    assert data["patterns"][0]["injection_count"] == 2
+    assert data["patterns"][0]["utilization_successes"] == 2
+
+
+def test_write_injected_success_patterns_gain_weight_faster(tmp_path):
+    baseline_events = [_prompt_event("debugging", 0.85, "TypeError in parser line 42")]
+    injected_events = [_prompt_event_with_injection("debugging", 0.85, "TypeError in parser line 42", 1)]
+    baseline_file = tmp_path / "baseline.json"
+    injected_file = tmp_path / "injected.json"
+
+    write_session_patterns(baseline_file, baseline_events, files_edited=1)
+    write_session_patterns(baseline_file, baseline_events, files_edited=1)
+
+    write_session_patterns(injected_file, injected_events, files_edited=1)
+    write_session_patterns(injected_file, injected_events, files_edited=1)
+
+    baseline_weight = json.loads(baseline_file.read_text())["patterns"][0]["weight"]
+    injected_weight = json.loads(injected_file.read_text())["patterns"][0]["weight"]
+    assert injected_weight > baseline_weight
 
 
 def test_write_multiple_domains(tmp_path):

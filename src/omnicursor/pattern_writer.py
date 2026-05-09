@@ -31,6 +31,7 @@ HARD_FLOOR: float = 0.55
 INITIAL_WEIGHT: float = 0.60
 WEIGHT_INCREMENT: float = 0.05
 WEIGHT_CAP: float = 0.95
+UTILIZATION_SUCCESS_WEIGHT_MULTIPLIER: float = 1.5
 
 # Eviction floor — patterns below this are removed regardless of recency.
 WEIGHT_FLOOR: float = 0.10
@@ -42,6 +43,8 @@ DECAY_AMOUNT: float = 0.10
 
 # Cap per domain — prevents any single domain from monopolizing the cache.
 MAX_PATTERNS_PER_DOMAIN: int = 20
+UTILIZATION_EVICT_MIN_INJECTIONS: int = 10
+UTILIZATION_EVICT_MIN_RATE: float = 0.2
 
 STOPWORDS: frozenset = frozenset({
     "a", "an", "and", "are", "as", "at", "be", "by", "for", "from",
@@ -71,7 +74,16 @@ def _load_patterns(path: Path) -> List[Dict[str, Any]]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         raw = data.get("patterns", [])
-        return [p for p in raw if isinstance(p, dict)]
+        result: List[Dict[str, Any]] = []
+        for p in raw:
+            if not isinstance(p, dict):
+                continue
+            result.append({
+                **p,
+                "injection_count": int(p.get("injection_count", 0)),
+                "utilization_successes": int(p.get("utilization_successes", 0)),
+            })
+        return result
     except (json.JSONDecodeError, OSError):
         return []
 
@@ -107,16 +119,23 @@ def _upsert_pattern(
     keywords: List[str],
     description: str,
     now: float,
+    *,
+    injected_success: bool = False,
 ) -> List[Dict[str, Any]]:
     """Insert or update a pattern. Returns updated list."""
     pattern_key = " ".join(sorted(keywords[:5]))
 
     for i, p in enumerate(patterns):
         if p.get("domain") == domain and p.get("pattern") == pattern_key:
+            increment = WEIGHT_INCREMENT * (
+                UTILIZATION_SUCCESS_WEIGHT_MULTIPLIER if injected_success else 1.0
+            )
             updated = {
                 **p,
-                "weight": min(WEIGHT_CAP, round(p.get("weight", INITIAL_WEIGHT) + WEIGHT_INCREMENT, 3)),
+                "weight": min(WEIGHT_CAP, round(p.get("weight", INITIAL_WEIGHT) + increment, 3)),
                 "success_count": p.get("success_count", 1) + 1,
+                "injection_count": int(p.get("injection_count", 0)) + (1 if injected_success else 0),
+                "utilization_successes": int(p.get("utilization_successes", 0)) + (1 if injected_success else 0),
                 "last_seen": now,
                 "description": description,
             }
@@ -129,10 +148,26 @@ def _upsert_pattern(
         "domain": domain,
         "weight": INITIAL_WEIGHT,
         "success_count": 1,
+        "injection_count": 1 if injected_success else 0,
+        "utilization_successes": 1 if injected_success else 0,
         "last_seen": now,
         "description": description,
     }
     return patterns + [new_pattern]
+
+
+def _evict_low_utilization(patterns: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Drop patterns that are injected often but rarely lead to success."""
+    result: List[Dict[str, Any]] = []
+    for p in patterns:
+        injection_count = int(p.get("injection_count", 0))
+        utilization_successes = int(p.get("utilization_successes", 0))
+        if injection_count > UTILIZATION_EVICT_MIN_INJECTIONS:
+            rate = utilization_successes / injection_count if injection_count else 0.0
+            if rate < UTILIZATION_EVICT_MIN_RATE:
+                continue
+        result.append(p)
+    return result
 
 
 def _evict_overflow(patterns: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -187,6 +222,7 @@ def extract_patterns_from_events(
             "domain": domain,
             "keywords": keywords,
             "description": description,
+            "injected": int(evt.get("patterns_injected", 0)) > 0,
         })
 
     return candidates
@@ -224,9 +260,11 @@ def write_session_patterns(
             keywords=c["keywords"],
             description=c["description"],
             now=now,
+            injected_success=bool(c.get("injected")),
         )
         written += 1
 
+    existing = _evict_low_utilization(existing)
     existing = _evict_overflow(existing)
     _save_patterns(patterns_file, existing)
     return written

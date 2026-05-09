@@ -1,0 +1,102 @@
+prompt,expected,predicted,correct,score,reason,notes
+help me debug this failing test,debug-intelligence,debug-intelligence,True,0.95,Exact trigger: 'debug',exact trigger: debug
+there's an error in my API endpoint,debug-intelligence,debug-intelligence,True,0.95,Exact trigger: 'error',exact trigger: error
+troubleshoot why my service keeps crashing,debug-intelligence,debug-intelligence,True,0.95,Exact trigger: 'troubleshoot',exact trigger: troubleshoot
+find the root cause of this regression,debug-intelligence,debug-intelligence,True,0.95,Exact trigger: 'root cause',exact trigger: root cause
+I'm getting a traceback in the auth module,debug-intelligence,debug-intelligence,True,0.95,Exact trigger: 'traceback',exact trigger: traceback
+investigate the bug in the payment flow,debug-intelligence,debug-intelligence,True,0.95,Exact trigger: 'investigate',exact trigger: bug
+write unit tests for my new service,testing,testing,True,0.95,Exact trigger: 'test',exact trigger: unit tests
+add integration tests to the auth module,testing,testing,True,0.95,Exact trigger: 'test',exact trigger: integration tests
+improve test coverage for this file,testing,testing,True,0.95,Exact trigger: 'test',keyword: test + coverage
+help me validate this edge case,testing,testing,True,0.95,Exact trigger: 'validate',exact trigger: validate
+create a test strategy for this feature,testing,testing,True,0.95,Exact trigger: 'test',exact trigger: test strategy
+run quality assurance on the new module,testing,testing,True,0.95,Exact trigger: 'quality assurance',exact trigger: quality assurance
+review this pull request,pr-review,pr-review,True,0.95,Exact trigger: 'pull request',exact trigger: pull request
+do a code review on my changes,pr-review,code-quality-analyzer,False,0.95,Exact trigger: 'code review',exact trigger: code review
+check merge readiness for this branch,pr-review,pr-review,True,0.95,Exact trigger: 'merge readiness',exact trigger: merge readiness
+assess the PR before I merge,pr-review,pr-review,True,0.8,Fuzzy match: 'assess pr' (80%),exact trigger: assess pr
+review these changes before shipping,pr-review,pr-review,True,0.8,Fuzzy match: 'pr review' (80%),exact trigger: review changes
+check this code meets our standards,pr-review,code-quality-analyzer,False,0.7826,Fuzzy match: 'code standards' (78%),exact trigger: standards review
+address the comments from the PR review,address-pr-comments,pr-review,False,0.95,Exact trigger: 'pr review',exact trigger: address pr comments
+fix the review feedback on my PR,address-pr-comments,address-pr-comments,True,0.8421,Fuzzy match: 'pr feedback' (84%),exact trigger: fix review feedback
+resolve the comments my reviewer left,address-pr-comments,pr-review,False,0.7368,Fuzzy match: 'review code' (74%),exact trigger: resolve pr comments
+update the PR based on the feedback,address-pr-comments,address-pr-comments,True,0.8421,Fuzzy match: 'pr feedback' (84%),exact trigger: update pr
+apply the review feedback to my branch,address-pr-comments,address-pr-comments,True,0.8421,Fuzzy match: 'pr feedback' (84%),keyword: feedback + review
+handle the remaining review comments,address-pr-comments,address-pr-comments,True,0.95,Exact trigger: 'review comments',keyword: resolve + comments + review
+optimize the performance of this endpoint,performance,performance,True,0.95,Exact trigger: 'performance',exact trigger: performance
+"this function is too slow, fix it",performance,performance,True,0.95,Exact trigger: 'slow',exact trigger: slow
+find the bottleneck in my request pipeline,performance,performance,True,0.95,Exact trigger: 'bottleneck',exact trigger: bottleneck
+profile the database query execution,performance,debug-database,False,0.7273,Fuzzy match: 'database debug' (73%),exact trigger: profiling
+reduce the latency on this API call,performance,performance,True,0.95,Exact trigger: 'latency',exact trigger: latency
+benchmark this sorting algorithm,performance,performance,True,0.95,Exact trigger: 'benchmark',exact trigger: benchmark
+audit the security of this authentication system,security-audit,security-audit,True,0.95,Exact trigger: 'security',exact trigger: audit
+check for SQL injection vulnerabilities,security-audit,security-audit,True,0.8571,Fuzzy match: 'vulnerability' (86%),keyword: vulnerability + injection
+run a security scan on this module,security-audit,security-audit,True,0.95,Exact trigger: 'security',exact trigger: security scan
+do a threat model for the new payment feature,security-audit,security-audit,True,0.95,Exact trigger: 'threat model',exact trigger: threat model
+assess the risk of exposing this endpoint,security-audit,pr-review,False,0.8,Fuzzy match: 'assess pr' (80%),keyword: risk + security
+check for vulnerabilities in the API,security-audit,security-audit,True,0.8571,Fuzzy match: 'vulnerability' (86%),keyword: vulnerability + security
+write documentation for this REST API,documentation-architect,documentation-architect,True,0.95,Exact trigger: 'documentation',exact trigger: documentation
+generate API docs for the new endpoints,documentation-architect,documentation-architect,True,0.95,Exact trigger: 'docs',exact trigger: api docs
+create a README for this module,documentation-architect,polymorphic-agent,False,0.0,No agent matched,keyword: documentation + readme
+improve the developer experience for this library,documentation-architect,documentation-architect,True,0.95,Exact trigger: 'developer experience',exact trigger: developer experience
+write technical documentation for onboarding,documentation-architect,documentation-architect,True,0.95,Exact trigger: 'documentation',keyword: documentation + guide
+update the knowledge management system docs,documentation-architect,documentation-architect,True,0.95,Exact trigger: 'docs',exact trigger: knowledge management
+build a React component for the dashboard,frontend-developer,frontend-developer,True,0.95,Exact trigger: 'react',exact trigger: react
+add TypeScript types to this component,frontend-developer,frontend-developer,True,0.95,Exact trigger: 'typescript',exact trigger: typescript
+implement a responsive UI for mobile,frontend-developer,frontend-developer,True,0.8571,Fuzzy match: 'implement ui' (86%),exact trigger: responsive design
+create a new frontend component with state,frontend-developer,frontend-developer,True,0.95,Exact trigger: 'frontend',exact trigger: create component
+build the user interface for the settings page,frontend-developer,frontend-developer,True,0.75,Fuzzy match: 'build interface' (75%),exact trigger: build interface
+develop a data visualization dashboard,frontend-developer,testing,False,0.7826,Fuzzy match: 'validation' (78%),exact trigger: build dashboard
+optimize this Python async function,python-fastapi-expert,python-fastapi-expert,True,0.95,Exact trigger: 'python',exact trigger: async
+add a FastAPI endpoint for user registration,python-fastapi-expert,python-fastapi-expert,True,0.95,Exact trigger: 'fastapi',exact trigger: fastapi
+define a Pydantic model for the request body,python-fastapi-expert,python-fastapi-expert,True,0.95,Exact trigger: 'pydantic',exact trigger: pydantic
+implement backend authentication with Python,python-fastapi-expert,python-fastapi-expert,True,0.95,Exact trigger: 'python',exact trigger: backend development
+speed up this Python service,python-fastapi-expert,performance,False,0.95,Exact trigger: 'speed',exact trigger: python optimization
+refactor this async route handler,python-fastapi-expert,python-fastapi-expert,True,0.95,Exact trigger: 'async',keyword: async + python + backend
+debug the slow database query,debug-database,debug-intelligence,False,0.95,Exact trigger: 'debug',exact trigger: database debug
+optimize this SQL query for performance,debug-database,performance,False,0.95,Exact trigger: 'performance',exact trigger: sql performance
+troubleshoot the database connection timeout,debug-database,debug-intelligence,False,0.95,Exact trigger: 'troubleshoot',exact trigger: db connection issue
+analyze why the query is running slowly,debug-database,performance,False,0.95,Exact trigger: 'slow',keyword: database + query + sql
+fix the database performance degradation,debug-database,debug-database,True,0.95,Exact trigger: 'database performance',exact trigger: database performance
+investigate the schema index bottleneck,debug-database,debug-intelligence,False,0.95,Exact trigger: 'investigate',keyword: database + index + schema
+write a commit message for my changes,commit,commit,True,0.95,Exact trigger: 'commit',exact trigger: commit message
+generate a semantic commit for this fix,commit,commit,True,0.95,Exact trigger: 'commit',exact trigger: semantic commit
+create a commit for the refactored auth module,commit,commit,True,0.95,Exact trigger: 'commit',exact trigger: create commit
+help me commit these changes,commit,commit,True,0.95,Exact trigger: 'commit',exact trigger: commit these changes
+make a git commit with good message format,commit,commit,True,0.95,Exact trigger: 'commit',keyword: git + commit + message
+generate the changelog entry for this commit,commit,commit,True,0.95,Exact trigger: 'commit',keyword: commit + changelog
+summarize this long error log,content-summarizer,content-summarizer,True,0.95,Exact trigger: 'summarize',keyword: summarize + log
+condense this large API response,content-summarizer,content-summarizer,True,0.95,Exact trigger: 'condense',keyword: condense + summary
+extract the key information from this document,content-summarizer,documentation-architect,False,0.7619,Fuzzy match: 'documentation' (76%),exact trigger: extract key information
+reduce this text to the main points,content-summarizer,polymorphic-agent,False,0.0,No agent matched,exact trigger: reduce text
+make a summary of the meeting notes,content-summarizer,content-summarizer,True,0.7368,Fuzzy match: 'make summary' (74%),exact trigger: make summary
+summarize the content of this file,content-summarizer,content-summarizer,True,0.95,Exact trigger: 'summarize',exact trigger: summarize content
+analyze the structure of this repository,repository-crawler,repository-crawler,True,0.7692,Fuzzy match: 'crawl repository' (77%),exact trigger: analyze repository structure
+crawl the codebase and index all modules,repository-crawler,repository-crawler,True,0.8,Fuzzy match: 'map codebase' (80%),exact trigger: crawl repository
+map the codebase architecture,repository-crawler,repository-crawler,True,0.8,Fuzzy match: 'map codebase' (80%),exact trigger: map codebase
+explore this repo and give me an overview,repository-crawler,research,False,0.95,Exact trigger: 'explore',exact trigger: explore repo
+index all the files in this repository,repository-crawler,repository-crawler,True,0.7692,Fuzzy match: 'crawl repository' (77%),exact trigger: index codebase
+give me codebase intelligence on this project,repository-crawler,repository-crawler,True,0.95,Exact trigger: 'codebase intelligence',exact trigger: codebase intelligence
+research the best approach to implement caching,research,research,True,0.95,Exact trigger: 'research',exact trigger: research
+investigate how this library works internally,research,debug-intelligence,False,0.95,Exact trigger: 'investigate',keyword: investigate + understand
+analyze the tradeoffs between these two approaches,research,polymorphic-agent,False,0.0,No agent matched,exact trigger: analysis
+explore the patterns used in this module,research,research,True,0.95,Exact trigger: 'explore',exact trigger: explore
+help me understand how this algorithm works,research,research,True,0.95,Exact trigger: 'understand',exact trigger: understand
+how does the authentication flow work?,research,polymorphic-agent,False,0.0,No agent matched,exact trigger: how does this work
+check the code quality of this module,code-quality-analyzer,code-quality-analyzer,True,0.95,Exact trigger: 'code quality',exact trigger: code quality
+identify anti-patterns in my codebase,code-quality-analyzer,code-quality-analyzer,True,0.95,Exact trigger: 'anti-patterns',exact trigger: anti-patterns
+assess if my code meets quality standards,code-quality-analyzer,pr-review,False,0.8,Fuzzy match: 'assess pr' (80%),exact trigger: code standards
+find code smells in this service,code-quality-analyzer,code-quality-analyzer,True,0.95,Exact trigger: 'code smells',exact trigger: code smells
+run a quality analysis on this PR,code-quality-analyzer,code-quality-analyzer,True,0.95,Exact trigger: 'quality analysis',exact trigger: quality analysis
+do a quality assessment of the backend,code-quality-analyzer,code-quality-analyzer,True,0.95,Exact trigger: 'quality assessment',exact trigger: quality assessment
+create a handoff summary for this session,handoff-guide,handoff-guide,True,0.95,Exact trigger: 'handoff',exact trigger: handoff
+write a session summary so I can continue later,handoff-guide,handoff-guide,True,0.95,Exact trigger: 'session summary',keyword: session + summary + continue
+document what we did and what's left,handoff-guide,documentation-architect,False,0.7619,Fuzzy match: 'documentation' (76%),keyword: summary + remaining
+prepare context for the next session,handoff-guide,handoff-guide,True,0.95,Exact trigger: 'context for the next session',keyword: next + session + context
+I need to hand off this work to a teammate,handoff-guide,handoff-guide,True,0.95,Exact trigger: 'hand off',keyword: handoff + session
+summarize what's left so I can pick up later,handoff-guide,content-summarizer,False,0.95,Exact trigger: 'summarize',keyword: remaining + continue + next
+help me with this general coding task,polymorphic-agent,polymorphic-agent,True,0.0,No agent matched,no triggers matched — fallback
+what should I work on next?,polymorphic-agent,polymorphic-agent,True,0.0,No agent matched,no triggers matched — fallback
+improve this code,polymorphic-agent,polymorphic-agent,True,0.0,No agent matched,no triggers matched — fallback (too vague)
+make this better,polymorphic-agent,polymorphic-agent,True,0.0,No agent matched,no triggers matched — fallback (too vague)
+check this file,polymorphic-agent,polymorphic-agent,True,0.0,No agent matched,no triggers matched — fallback (too vague)

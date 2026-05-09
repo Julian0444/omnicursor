@@ -50,6 +50,24 @@ def run_ruff_check(file_path: str) -> int:
         return 0
 
 
+def run_tsc_check(file_path: str) -> int:
+    """Run ``tsc --noEmit`` diagnostically on *file_path*.
+
+    Returns the number of TypeScript error lines. Never modifies files.
+    """
+    try:
+        result = subprocess.run(
+            ["tsc", "--noEmit", file_path],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        output = (result.stdout or "").strip()
+        return len([ln for ln in output.splitlines() if ln.strip() and "error TS" in ln])
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return 0
+
+
 def handle_edit(event: Dict[str, Any]) -> Dict[str, Any]:
     """Process an afterFileEdit event dict and return a result dict."""
     file_path = event.get("file_path", "")
@@ -63,6 +81,10 @@ def handle_edit(event: Dict[str, Any]) -> Dict[str, Any]:
     if language == "python" and file_path:
         ruff_findings = run_ruff_check(file_path)
 
+    tsc_findings = 0
+    if language == "typescript" and file_path:
+        tsc_findings = run_tsc_check(file_path)
+
     return {
         "event": "file_edited",
         "conversation_id": conversation_id,
@@ -70,4 +92,5 @@ def handle_edit(event: Dict[str, Any]) -> Dict[str, Any]:
         "edit_count": edit_count,
         "language": language,
         "ruff_findings": ruff_findings,
+        "tsc_findings": tsc_findings,
     }
