@@ -15,16 +15,12 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-HOOKS_DIR = Path(__file__).resolve().parent
-REPO_ROOT = HOOKS_DIR.parents[1]
-SRC_DIR = REPO_ROOT / "src"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-sys.path.insert(0, str(HOOKS_DIR))
-sys.path.insert(0, str(SRC_DIR))
-
-import _common  # noqa: E402
-from _common import ensure_dirs, log_event, read_stdin, write_stdout  # noqa: E402
-from omnicursor.pattern_writer import write_session_patterns  # noqa: E402
+import _common
+from _common import ensure_dirs, log_event, read_stdin, write_stdout
+from omnicursor.pattern_writer import write_session_patterns
 
 
 # ---------------------------------------------------------------------------
