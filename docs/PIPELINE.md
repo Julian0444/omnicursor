@@ -73,12 +73,14 @@ Fires on every prompt before the model sees anything.
 
 ## Stage 2 — Execution (onex:execute-plan skill)
 
-Triggered when the user types `/execute-plan`.
+Triggered when the user types `/execute-plan`. Accepts either a plan file
+(`/execute-plan docs/plans/my-plan.md`) or a single ticket ID
+(`/execute-plan — implement OMN-XX`).
 
 | Phase | What happens |
 |---|---|
-| Plan review | `onex:plan-review` — adversarial check. Stops on CRITICAL/MAJOR findings. |
-| Ticket creation | `onex:plan-to-tickets` — one Linear epic + one ticket per plan task. |
+| Plan review | `onex:plan-review` — adversarial check. Stops on CRITICAL/MAJOR findings. Skipped when passing a ticket ID directly. |
+| Ticket creation | `onex:plan-to-tickets` — one Linear epic + one ticket per plan task. Skipped when passing a ticket ID directly. |
 | Pipeline | `run_ticket_pipeline(ticket_id)` via omnimarket MCP bridge for each ticket. |
 
 **omnimarket `node_ticket_pipeline` phases:**
