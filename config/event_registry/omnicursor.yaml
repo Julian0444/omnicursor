@@ -1,0 +1,64 @@
+# Event Registry: OmniCursor Platform
+# Loaded by omnimarket.nodes.node_emit_daemon.event_registry.EventRegistry.from_yaml
+#
+# Transform names reference callables in TRANSFORM_REGISTRY:
+#   - passthrough: no modification
+#   - strip_prompt: remove full prompt, keep preview + length
+#   - strip_body: remove body, keep preview + length
+platform: omnicursor
+version: "1.0.0"
+description: "Event registry for OmniCursor Cursor IDE hooks"
+
+events:
+  # =========================================================================
+  # Session Events
+  # =========================================================================
+  session.outcome:
+    fan_out:
+      - topic: "onex.cmd.omniintelligence.session-outcome.v1"
+        description: "Session outcome for intelligence feedback loop"
+      - topic: "onex.evt.omnicursor.session-outcome.v1"
+        description: "Session outcome for dashboards and monitoring"
+    partition_key_field: session_id
+    required_fields: [session_id, outcome]
+
+  # =========================================================================
+  # Intelligence Commands
+  # =========================================================================
+  utilization.scoring.requested:
+    fan_out:
+      - topic: "onex.cmd.omniintelligence.utilization-scoring.v1"
+        description: "Utilization scoring command to omniintelligence"
+    partition_key_field: session_id
+    required_fields: [session_id, injected_pattern_ids]
+
+  # =========================================================================
+  # Prompt Events
+  # =========================================================================
+  prompt.submitted:
+    fan_out:
+      - topic: "onex.evt.omnicursor.prompt-submitted.v1"
+        transform: strip_prompt
+        description: "Sanitized prompt preview for observability"
+    partition_key_field: session_id
+    required_fields: [prompt_preview, session_id]
+
+  # =========================================================================
+  # Tool Events
+  # =========================================================================
+  tool.executed:
+    fan_out:
+      - topic: "onex.evt.omnicursor.tool-executed.v1"
+        description: "Tool execution event for observability"
+    partition_key_field: session_id
+    required_fields: [tool_name, session_id]
+
+  # =========================================================================
+  # Injection Events
+  # =========================================================================
+  injection.recorded:
+    fan_out:
+      - topic: "onex.evt.omnicursor.injection-recorded.v1"
+        description: "Injection tracking for A/B analysis"
+    partition_key_field: session_id
+    required_fields: [injection_id, session_id, cohort]

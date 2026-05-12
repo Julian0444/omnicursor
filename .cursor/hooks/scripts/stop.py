@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
@@ -225,21 +226,54 @@ def main() -> None:
                 summary["files_edited"],
                 summary["session_outcome"],
             )
-            write_session_outcome(
-                _build_outbox_payload(summary, events, conversation_id, correlation_id)
+            outbox_payload = _build_outbox_payload(
+                summary, events, conversation_id, correlation_id
             )
+            write_session_outcome(outbox_payload)
 
-        send_event(
-            "onex.evt.omnicursor.session-ended.v1",
-            {
-                "conversation_id": conversation_id,
-                "correlation_id": correlation_id,
-                "session_status": status,
-                "session_outcome": summary["session_outcome"],
-                "session_outcome_reason": summary["session_outcome_reason"],
-                "summary": summary,
-            },
-        )
+            _outcome = outbox_payload["session_outcome"]
+            _error = (
+                {
+                    "code": "session_failed",
+                    "message": outbox_payload["session_outcome_reason"],
+                    "component": "omnicursor",
+                }
+                if _outcome == "failed"
+                else None
+            )
+            try:
+                send_event(
+                    "session.outcome",
+                    {
+                        "session_id": conversation_id,
+                        "outcome": _outcome,
+                        "reason": outbox_payload["session_outcome_reason"],
+                        "correlation_id": correlation_id,
+                        "matched_agent": outbox_payload["matched_agent"],
+                        "matched_confidence": outbox_payload["matched_confidence"],
+                        "files_edited": outbox_payload["files_edited"],
+                        "started_at": outbox_payload["started_at"],
+                        "ended_at": outbox_payload["ended_at"],
+                        "error": _error,
+                    },
+                )
+            except Exception:
+                pass
+
+            _injected = outbox_payload.get("injected_pattern_ids") or []
+            if _injected:
+                try:
+                    send_event(
+                        "utilization.scoring.requested",
+                        {
+                            "session_id": conversation_id,
+                            "correlation_id": correlation_id,
+                            "session_outcome": _outcome,
+                            "injected_pattern_ids": list(_injected),
+                        },
+                    )
+                except Exception:
+                    pass
         if os.environ.get("OMNICURSOR_PATTERN_SYNC_HTTP", "").lower() in (
             "1",
             "true",
