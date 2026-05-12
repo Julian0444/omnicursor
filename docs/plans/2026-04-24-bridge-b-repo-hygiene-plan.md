@@ -37,7 +37,7 @@ pytest tests/ -v
 
 ## Out of scope
 
-- Staging/committing Docker artifacts (`compose.yaml`, `docker/`, `docs/OMNINODE_STACK.md`, `.env.omninode.example`) — follow-up batch
+- Staging/committing Docker artifacts (`compose.yaml`, `docker/`, `docs/dev/OMNINODE_STACK.md`, `.env.omninode.example`) — follow-up batch
 - MCP tool implementation (BRIDGE-C)
 - Subprocess bridge code
 - Docker Compose expansion

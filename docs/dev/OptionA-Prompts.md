@@ -2,7 +2,7 @@
 
 Fecha: 2026-05-10
 
-Objetivo: cerrar Option A del documento `# Intelligence Layer — Current State and Options.md` al 100%, sin empezar Option B.
+Objetivo: cerrar Option A del documento `INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md` al 100%, sin empezar Option B.
 
 Veredicto actual: Option A esta parcialmente implementada. Ya existen `injection_count`, `utilization_successes`, multiplier `1.5x` y eviction por baja utilizacion, pero falta cerrar la semantica real:
 
@@ -35,7 +35,7 @@ Restore de contexto:
 Estamos en /Users/jirustaroure/Desktop/OmniCursor.
 
 Objetivo global:
-Cerrar Option A del documento "# Intelligence Layer — Current State and Options.md" al 100%, sin implementar Option B.
+Cerrar Option A del documento "INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md" al 100%, sin implementar Option B.
 
 Definicion correcta de Option A:
 - Todo sigue local y stdlib-only.
@@ -62,7 +62,7 @@ Exclusiones:
 - No editar docs viejos.
 
 Lee estos archivos en orden:
-- "# Intelligence Layer — Current State and Options.md"
+- "INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md"
 - .cursor/hooks/scripts/user-prompt-submit.py
 - .cursor/hooks/scripts/stop.py
 - src/omnicursor/pattern_writer.py
@@ -479,7 +479,7 @@ Restore de contexto:
 Estamos en /Users/jirustaroure/Desktop/OmniCursor.
 
 Objetivo:
-Actualizar solo el documento "# Intelligence Layer — Current State and Options.md" para reflejar que Option A quedo completa, sin tocar Option B ni Option C.
+Actualizar solo el documento "INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md" para reflejar que Option A quedo completa, sin tocar Option B ni Option C.
 
 Usa este prompt solo despues de que Prompt G haya pasado ruff y pytest.
 
@@ -489,7 +489,7 @@ Exclusiones:
 - No tocar .cursor/rules/03-omnicursor-ownership.mdc.
 - No tocar otros docs.
 
-Actualiza "# Intelligence Layer — Current State and Options.md":
+Actualiza "INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md":
 1. En Option A, agrega una linea de estado:
    STATUS: COMPLETE as of 2026-05-10, verified by ruff + pytest.
 2. En "What changes", marca o reformula los bullets para decir que ya esta implementado:
@@ -504,7 +504,7 @@ Actualiza "# Intelligence Layer — Current State and Options.md":
 5. No declares Option B completa.
 
 Corre:
-git --no-pager diff "# Intelligence Layer — Current State and Options.md"
+git --no-pager diff "INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md"
 
 Reporta:
 - Diff completo del doc.

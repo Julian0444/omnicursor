@@ -1,5 +1,7 @@
 # Handoff — Option A Closure
 
+> **Location:** This file was moved from `docs/handoff.md` to keep the docs tree organized. The intelligence options write-up is [`docs/dev/INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md`](../../../dev/INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md).
+
 **Fecha:** 2026-05-10  
 **Rama:** julian/option-b-from-main  
 **Commits recientes:**

@@ -12,5 +12,9 @@ Active reference documents for contributors and CI. All files here are either re
 | [OMNICURSOR_SYSTEM_DESIGN.md](./OMNICURSOR_SYSTEM_DESIGN.md) | Systems design diagrams (Mermaid): IDE layers + optional OmniNode integration. |
 | [ROUTING_DEDUPLICATION.md](./ROUTING_DEDUPLICATION.md) | How scoring logic is shared between hooks and the Python library. Referenced by `scoring.py` and `agent_scoring.py`. |
 | [HOW_TO_RUN_IN_CURSOR.md](./HOW_TO_RUN_IN_CURSOR.md) | Walkthrough for running OmniCursor inside Cursor IDE. |
+| [OMNINODE_STACK.md](./OMNINODE_STACK.md) | What `compose.yaml` starts, optional profiles, remote build contexts. |
+| [explanation.md](./explanation.md) | Plain-language (ES) overview of OmniCursor for new contributors. |
+| [INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md](./INTELLIGENCE_LAYER_CURRENT_STATE_AND_OPTIONS.md) | Intelligence layer options (A/B/C), current wiring, roadmap. |
+| [OptionA-Prompts.md](./OptionA-Prompts.md) | Copy-paste prompts used to drive Option A closure work. |
 
 Completed planning docs, session handoffs, and capstone artifacts are in [`../archive/`](../archive/README.md).

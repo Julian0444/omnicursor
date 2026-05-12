@@ -225,7 +225,7 @@ Una línea JSON en `~/.omnicursor/demo-outbox.jsonl` con esta forma:
 **Por qué importa esto:**
 Este sobre es **el contrato congelado**. Cuando llegue Option C (la integración con Kafka y OmniIntelligence), nadie tiene que reescribir nada. Solo cambia "dónde se deposita el sobre": en lugar de en un archivo local, va a un broker Kafka. Los campos están diseñados para que el sistema upstream los consuma directamente, sin traducción. Es la promesa de "local-first, remote-ready".
 
-> **Detalle honesto:** según `docs/handoff.md`, hay gaps abiertos en Option A: los outcomes `failed`, `abandoned` y `unknown` aún **no** actualizan `injection_count` (solo `success` lo hace), y la escritura del JSON no es atómica. Esto no se ve en la demo porque ejecutamos un happy path, pero son los próximos parches.
+> **Detalle honesto:** según `docs/archive/dev/handoffs/2026-05-10-option-a-handoff.md`, hay gaps abiertos en Option A: los outcomes `failed`, `abandoned` y `unknown` aún **no** actualizan `injection_count` (solo `success` lo hace), y la escritura del JSON no es atómica. Esto no se ve en la demo porque ejecutamos un happy path, pero son los próximos parches.
 
 ---
 
@@ -313,7 +313,7 @@ TÚ ESCRIBES UN PROMPT
 | Escenario 1 eligió `content-summarizer` en lugar de `debug-intelligence` | El prompt-ejemplo del runbook contiene "summarize", trigger exacto de otro agente | **MEDIA** — corregir el prompt-ejemplo del runbook |
 | Escenario 2 dio `ruff_findings: 0` en la primera invocación | El hook llama `ruff` sin path absoluto; `.venv/bin` no estaba en el PATH del shell | **ALTA** — bug latente que muerde en la demo en vivo si Cursor no exporta el PATH correcto |
 | `injection_count` del patrón seguía en 0 después de inyectarse | El contador se actualiza en `stop`, no en `prompt_classified`. Es el diseño correcto. | **BAJA** — solo confunde si esperas updates en tiempo real |
-| Los gaps de Option A documentados en handoff.md no se vieron | La demo es happy path (`success`); los gaps están en outcomes `failed/abandoned/unknown` | **BAJA** — esperado, no es un bug |
+| Los gaps de Option A documentados en `docs/archive/dev/handoffs/2026-05-10-option-a-handoff.md` no se vieron | La demo es happy path (`success`); los gaps están en outcomes `failed/abandoned/unknown` | **BAJA** — esperado, no es un bug |
 
 ---
 
@@ -373,4 +373,4 @@ Si los cuatro pasos pasan, la demo está sana.
 ---
 
 **Última actualización:** 2026-05-10  
-**Basado en:** corrida real ejecutada antes de escribir este doc; ver `docs/demo_runbook_ab.md` para los comandos exactos del runbook formal.
+**Basado en:** corrida real ejecutada antes de escribir este doc; ver [`demo_runbook_ab.md`](./demo_runbook_ab.md) para los comandos exactos del runbook formal.

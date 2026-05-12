@@ -193,7 +193,7 @@ Esta rama está construyendo **"Option B" de la capa de inteligencia**:
 | Cómo se cablean los hooks | `.cursor/hooks.json` + `.cursor/hooks/scripts/*.py` |
 | La arquitectura completa | `docs/ARCHITECTURE.md` |
 | Diagramas del runtime | `docs/dev/OMNICURSOR_SYSTEM_DESIGN.md` |
-| Estado de implementación | `docs/dev/HANDOFF.md` |
+| Estado de implementación | `docs/archive/dev/HANDOFF.md` |
 | Cómo arrancar hoy | `docs/QUICKSTART.md` |
 | Criterios de "done" | `OmniCursor_DoD_Rubric.md` |
 

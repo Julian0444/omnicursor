@@ -100,6 +100,6 @@ ruff check src/ tests/ .cursor/hooks/
 
 - [`cursor.md`](./cursor.md) — Conventions and architecture
 - [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) — Setup, hooks, skills
-- [`docs/dev/HANDOFF.md`](./docs/dev/HANDOFF.md) — Implementation state
+- [`docs/archive/dev/HANDOFF.md`](./docs/archive/dev/HANDOFF.md) — Archived implementation state handoff
 - [`OmniCursor_DoD_Rubric.md`](./OmniCursor_DoD_Rubric.md) — Capstone rubric
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — Starter-pack buckets / adapter contract
