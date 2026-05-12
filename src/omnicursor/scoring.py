@@ -17,8 +17,8 @@ from typing import Any
 
 # v0 calibration — chosen so fuzzy keyword hits (0.55–0.75) are decisive
 # enough to be useful, while exact matches (0.95) are always unambiguous.
-# Not yet evaluated against a labeled prompt set; tune with a small eval
-# harness (100 labeled prompts, expected agent, precision/recall per agent).
+# Evaluated against eval/routing_labeled_prompts.csv (101 prompts):
+# macro precision ≥ 0.80, macro recall ≥ 0.60 (CI gate in test_routing_eval.py).
 HARD_FLOOR: float = 0.55
 
 STOPWORDS: frozenset[str] = frozenset({

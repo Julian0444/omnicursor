@@ -18,10 +18,8 @@ from __future__ import annotations
 
 import csv
 import json
-import re
 import sys
 from collections import defaultdict
-from difflib import SequenceMatcher
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -33,78 +31,8 @@ AGENTS_DIR = REPO_ROOT / ".cursor" / "agents"
 PROMPTS_CSV = Path(__file__).parent / "routing_labeled_prompts.csv"
 RESULTS_CSV = Path(__file__).parent / "routing_results.csv"
 
-# ---------------------------------------------------------------------------
-# Scoring engine (inlined so the script is self-contained and stdlib-only)
-# ---------------------------------------------------------------------------
-
-HARD_FLOOR: float = 0.55
-
-STOPWORDS: frozenset[str] = frozenset({
-    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from",
-    "has", "have", "i", "in", "is", "it", "my", "not", "of", "on",
-    "or", "the", "this", "that", "to", "was", "we", "with", "you",
-})
-
-
-def extract_keywords(text: str) -> set[str]:
-    return {
-        w for w in re.findall(r"\b\w+\b", text.lower())
-        if w not in STOPWORDS and len(w) > 2
-    }
-
-
-def fuzzy_threshold(trigger: str) -> float:
-    n = len(trigger)
-    if n <= 6:
-        return 0.85
-    if n <= 10:
-        return 0.78
-    return 0.72
-
-
-def score_agent(prompt_lower: str, prompt_words: set[str], agent: dict) -> tuple[float, str]:
-    activation = agent.get("activation_patterns", {})
-    explicit: list[str] = activation.get("explicit_triggers", [])
-    context: list[str] = activation.get("context_triggers", [])
-
-    best_score = 0.0
-    best_reason = ""
-
-    for trigger in explicit:
-        if trigger.lower() in prompt_lower and 0.95 > best_score:
-            best_score = 0.95
-            best_reason = f"Exact trigger: '{trigger}'"
-
-    for trigger in context:
-        if trigger.lower() in prompt_lower and 0.80 > best_score:
-            best_score = 0.80
-            best_reason = f"Context trigger: '{trigger}'"
-
-    if best_score < 0.90:
-        words_in_prompt = re.findall(r"\b\w+\b", prompt_lower)
-        for trigger in explicit:
-            trigger_lower = trigger.lower()
-            threshold = fuzzy_threshold(trigger_lower)
-            for word in words_in_prompt:
-                ratio = SequenceMatcher(None, trigger_lower, word).ratio()
-                if ratio >= threshold and ratio > best_score:
-                    best_score = ratio
-                    best_reason = f"Fuzzy match: '{trigger}' ({ratio:.0%})"
-
-    if best_score < 0.70:
-        keywords_raw: list[str] = activation.get("activation_keywords", [])
-        if not keywords_raw:
-            keywords_raw = [w for t in explicit for w in t.lower().split()]
-        keyword_set = {k.lower() for k in keywords_raw if len(k) > 2} - STOPWORDS
-        if keyword_set:
-            overlap = prompt_words & keyword_set
-            if len(overlap) >= 2:
-                scaled = 0.55 + (len(overlap) / len(keyword_set) * 0.30)
-                if scaled > best_score:
-                    best_score = scaled
-                    best_reason = "Keywords: {{{}}}".format(", ".join(sorted(overlap)))
-
-    return (best_score, best_reason)
+sys.path.insert(0, str(REPO_ROOT / "src"))
+from omnicursor.scoring import HARD_FLOOR, extract_keywords, score_agent  # noqa: E402
 
 
 def classify_prompt(prompt: str, agents: list[dict]) -> tuple[str, float, str]:
@@ -112,7 +40,7 @@ def classify_prompt(prompt: str, agents: list[dict]) -> tuple[str, float, str]:
         return ("polymorphic-agent", 0.0, "No agent matched")
 
     prompt_lower = prompt.lower()
-    prompt_words = extract_keywords(prompt)
+    prompt_words = set(extract_keywords(prompt))
     best_name, best_score, best_reason = "polymorphic-agent", 0.0, "No agent matched"
 
     for agent in agents:

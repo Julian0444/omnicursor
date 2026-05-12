@@ -16,6 +16,7 @@ Stdlib-only. No pip dependencies.
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from pathlib import Path
@@ -91,10 +92,12 @@ def _load_patterns(path: Path) -> List[Dict[str, Any]]:
 def _save_patterns(path: Path, patterns: List[Dict[str, Any]]) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps({"patterns": patterns}, indent=2, ensure_ascii=False),
+        tmp = path.with_name(path.name + ".tmp")
+        tmp.write_text(
+            json.dumps({"patterns": patterns}, indent=2, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )
+        os.replace(tmp, path)
     except OSError:
         pass
 
