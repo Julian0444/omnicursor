@@ -89,33 +89,25 @@ socket listener bound to ~/.omnicursor/emit.sock
 
 Leave it running. It polls every 2 seconds.
 
-### Terminal 3 — Smoke test (verify the pipe end-to-end)
+### Terminal 3 — Outbox watcher + preflight smoke test
 
-Run this once to confirm events flow from socket → OmniDash before the demo:
+Start the outbox watcher — leave it running for the whole demo:
 
 ```bash
-python3 -c "
-import socket, json, pathlib
-s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-s.connect(str(pathlib.Path.home() / '.omnicursor/emit.sock'))
-msg = {
-    'event_type': 'session.outcome',
-    'payload': {
-        'session_id': 'smoke-preflight',
-        'outcome': 'success',
-        'matched_agent': 'debugging-agent',
-        'matched_confidence': 0.92,
-    }
-}
-s.sendall((json.dumps(msg) + '\n').encode())
-print(s.recv(256).decode())
-"
+cd "$OMNICURSOR_ROOT"
+python3 scripts/watch_outbox.py
 ```
 
-Expected response: `{"status": "queued", "event_id": "..."}`.
+Then in a separate shell run the smoke test once to confirm the pipe is live:
 
-Within 2–3 seconds the OmniDash Live Event Stream widget should show the event.
-If it does not appear, check the sidecar terminal for errors.
+```bash
+cd "$OMNICURSOR_ROOT"
+python3 scripts/smoke_test.py
+```
+
+Expected: `{"status": "queued", "event_id": "..."}` from the smoke test.  
+Within 2–3 seconds Terminal 3 should print a color-coded `SESSION OUTCOME` block and the OmniDash Live Event Stream widget should update.  
+If neither happens, check the sidecar terminal for errors.
 
 ### Terminal 4 — Cursor (your working IDE)
 
@@ -171,7 +163,7 @@ fully unattended."
 
 ### Step 3 — Show the result
 
-When Claude finishes, show:
+When the pipeline finishes, show:
 - The PR URL in the Cursor output
 - The Linear ticket status: Done
 - The diff: `src/omnicursor/session_outbox.py` has the new field
@@ -210,14 +202,23 @@ matches `omniintelligence`'s expected schema — so omniintelligence can consume
 it, update pattern weights, and inject those patterns into the next Cursor
 session. That's the learning loop."
 
-### Step 3 — Show the durable outbox (optional, 1 min)
+### Step 3 — Show the outbox watcher (Terminal 3)
 
-```bash
-tail -f ~/.omnicursor/outbox.jsonl | python3 -m json.tool
+Switch to Terminal 3. It has been running `watch_outbox.py` since setup and already
+shows the Act 1 session in color:
+
+```
+── SESSION OUTCOME  conv=437b7ae7…
+  outcome  : SUCCESS
+  agent    : documentation-architect  conf=0.73
+  prompts  : 1   files edited: 9   patterns injected: 0
+
+── SOCKET EVENT  utilization.scoring.requested  session=437b7ae7…
+  patterns : auto-5f38e3a94eac
 ```
 
-**Narrate:** "The outbox is the durability layer. If the sidecar is down, events
-accumulate here and drain when it restarts — no data loss. This is the same
+**Narrate:** "The outbox is the durability layer. Every session is written here
+before the sidecar drains it — if the sidecar is down, nothing is lost. Same
 pattern OmniClaude uses with its emit daemon."
 
 ### Step 4 — Show the architecture diagram (optional)
