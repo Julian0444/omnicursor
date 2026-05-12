@@ -61,6 +61,19 @@ export INTELLIGENCE_SERVICE_URL=http://localhost:18091
 export OMNICURSOR_PATTERN_SYNC_HTTP=1
 export KAFKA_BOOTSTRAP_SERVERS=localhost:19092
 
+# --- 3. Start OmniDash bridge (optional) ---
+if [ -n "${OMNIDASH_ROOT:-}" ] && [ -d "$OMNIDASH_ROOT" ]; then
+    echo "Starting OmniDash bridge (fixtures → ${OMNIDASH_FIXTURES_DIR:-/tmp/omnicursor-omnidash-fixtures})..."
+    "$PYTHON" -m omnicursor.drainer.omnidash_bridge \
+        --outbox ~/.omnicursor/outbox.jsonl \
+        --cursor ~/.omnicursor/omnidash.cursor \
+        --fixtures "${OMNIDASH_FIXTURES_DIR:-/tmp/omnicursor-omnidash-fixtures}" \
+        --interval 2 &
+    OMNIDASH_PID=$!
+    echo "  OmniDash bridge PID=$OMNIDASH_PID"
+    trap "kill $OMNIDASH_PID 2>/dev/null; docker compose -f \"$REPO_ROOT/compose.yaml\" down" EXIT
+fi
+
 exec "$PYTHON" -m omnicursor.sidecar.daemon \
     --publisher "$PUBLISHER" \
     --outbox ~/.omnicursor/outbox.jsonl \
