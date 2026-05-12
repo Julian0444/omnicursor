@@ -99,22 +99,36 @@ run `gh auth login`.
 mkdir -p ~/.omnicursor
 ```
 
+### 7. OmniDash (optional — for live event visualization)
+
+```bash
+export OMNIDASH_ROOT=/path/to/omnidash
+cd "$OMNIDASH_ROOT"
+cp .env.example .env.local   # then set OMNIDASH_AUTH_ENABLED=false, DATABASE_URL pointing to postgres:5436/omnidash_analytics
+npm install
+npm run db:migrate
+```
+
+OmniDash will start automatically when `OMNIDASH_ROOT` is set and you run `run_bc_stack.sh`.
+
 ---
 
 ## Day-of setup (do this before the audience arrives)
 
-Open **3 terminals** and leave them running.
+Open **3 terminals** and leave them running (4 if using OmniDash).
 
-### Terminal 1 — Full B+C stack (compose + sidecar)
+### Terminal 1 — Full B+C stack (compose + sidecar + OmniDash)
 
 ```bash
+export OMNIDASH_ROOT=/path/to/omnidash   # optional — omit if not using OmniDash
 cd "$OMNICURSOR_ROOT"
 source .venv/bin/activate
 bash scripts/run_bc_stack.sh
 ```
 
 Starts Redpanda, Postgres, Valkey, and omniintelligence, waits for the reducer to be
-healthy, then launches the sidecar with Kafka publishing enabled.
+healthy, then launches the sidecar with Kafka publishing enabled. If `OMNIDASH_ROOT`
+is set, also starts the OmniDash bridge and `npm run dev:local`.
 
 Expected output:
 
@@ -125,6 +139,13 @@ intelligence-reducer is healthy.
 Starting OmniCursor sidecar (publisher=kafka)...
   INTELLIGENCE_SERVICE_URL=http://localhost:18091
   OMNICURSOR_PATTERN_SYNC_HTTP=1
+
+Starting OmniDash bridge (fixtures → /tmp/omnicursor-omnidash-fixtures)...
+  OmniDash bridge PID=12345
+Starting OmniDash UI (npm run dev:local)...
+  OmniDash UI PID=12346
+  Open: http://localhost:3000/live-events
+         http://localhost:3000/patterns
 
 sidecar starting | publisher=kafka outbox=~/.omnicursor/outbox.jsonl socket=~/.omnicursor/emit.sock interval=2.0s
 socket listener bound to ~/.omnicursor/emit.sock
@@ -286,6 +307,21 @@ Type any prompt in the same domain in Cursor. Then show Terminal 2:
 injected them. The model now has context shaped by the previous session's outcome.
 Every session makes the next one smarter — that's the loop."
 
+### Step 3b — Show the learning loop in OmniDash (if running)
+
+Open **http://localhost:3000/live-events** in a browser. Every Kafka event the sidecar
+published appears here in real time — show the `session.outcome` and
+`utilization.scoring.requested` events flowing in.
+
+Then open **http://localhost:3000/patterns**. The pattern weight deltas from
+omniintelligence appear here as `onex.evt.omniintelligence.pattern-*` events.
+
+**Narrate:** "This is the intelligence layer made visible. Every event the sidecar
+publishes appears on the left. The patterns page shows the weight updates — which
+patterns got stronger from a successful session, which decayed from a failed one."
+
+---
+
 ### Step 4 — Show the full architecture (optional)
 
 ```
@@ -369,6 +405,8 @@ gh auth login
 |---|---|---|
 | `OMNICURSOR_ROOT` | You | Path to this worktree |
 | `OMNIMARKET_ROOT` | You | Path to local omnimarket checkout |
+| `OMNIDASH_ROOT` | You (optional) | Path to OmniDash checkout — enables OmniDash startup in `run_bc_stack.sh` |
+| `OMNIDASH_FIXTURES_DIR` | You (optional) | Override fixture directory (default `/tmp/omnicursor-omnidash-fixtures`) |
 | `INTELLIGENCE_SERVICE_URL` | `run_bc_stack.sh` | omniintelligence reducer for per-prompt pattern fetch (`http://localhost:18091`) |
 | `OMNICURSOR_PATTERN_SYNC_HTTP` | `run_bc_stack.sh` | `1` = pull updated patterns from omniintelligence after each session |
 | `KAFKA_BOOTSTRAP_SERVERS` | `run_bc_stack.sh` | Redpanda broker (`localhost:19092`) |
