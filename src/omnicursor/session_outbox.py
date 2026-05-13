@@ -4,6 +4,15 @@ Appends one JSON line per session to ~/.omnicursor/outbox.jsonl.
 The outbox is the contract-frozen payload that Option C will drain to
 Kafka / OmniIntelligence when ready.
 
+**Schema ``omnicursor.session_outcome.v1``** (one JSON object per line; written by
+``stop.py`` via :func:`write_session_outcome`):
+
+- ``schema_version``: literal ``"omnicursor.session_outcome.v1"``.
+- ``injected_pattern_ids``: **list[str]**, deduped union of
+  ``injected_pattern_ids`` from all ``prompt_classified`` events for the
+  session (empty list when none). Required on new rows; older lines may omit
+  the key (drainer treats missing like "no IDs").
+
 Stdlib only. Never raises — failures are silently swallowed so the stop
 hook is never blocked by outbox I/O errors.
 """

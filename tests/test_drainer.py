@@ -224,6 +224,14 @@ class TestTransform:
         events = outbox_row_to_events(_row(injected_pattern_ids=[]))
         assert len(events) == 1
 
+    def test_legacy_row_without_injected_pattern_ids_yields_one_event(self) -> None:
+        """Legacy rows may omit the key; treat like empty — no utilization event."""
+        r = _row()
+        del r["injected_pattern_ids"]
+        events = outbox_row_to_events(r)
+        assert len(events) == 1
+        assert events[0][0] == "session.outcome"
+
     def test_missing_required_field_raises_key_error(self) -> None:
         r = _row()
         del r["conversation_id"]

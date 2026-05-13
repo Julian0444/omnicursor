@@ -411,10 +411,12 @@ class TestCorrelationThreading:
     def test_correlation_id_from_session_context(self, monkeypatch: pytest.MonkeyPatch) -> None:
         e = self._run(monkeypatch, session={"latest_correlation_id": "abc123def456"})
         assert e["correlation_id"] == "abc123def456"
+        assert e["injected_pattern_ids"] == []
 
     def test_missing_session_uses_empty_string(self, monkeypatch: pytest.MonkeyPatch) -> None:
         e = self._run(monkeypatch, session={})
         assert e["correlation_id"] == ""
+        assert e["injected_pattern_ids"] == []
 
     def test_extra_session_fields_do_not_crash(self, monkeypatch: pytest.MonkeyPatch) -> None:
         e = self._run(monkeypatch, session={
@@ -423,6 +425,7 @@ class TestCorrelationThreading:
             "started_at": "2026-04-14T00:00:00+00:00",
         })
         assert e["correlation_id"] == "valid0000001"
+        assert e["injected_pattern_ids"] == []
 
     def test_correlation_id_on_failed_session(self, monkeypatch: pytest.MonkeyPatch) -> None:
         e = self._run(
@@ -432,6 +435,7 @@ class TestCorrelationThreading:
         )
         assert e["correlation_id"] == "failcorr0001"
         assert e["session_outcome"] == "failed"
+        assert e["injected_pattern_ids"] == []
 
 
 # ---------------------------------------------------------------------------
@@ -482,6 +486,44 @@ class TestTypedEventSchema:
     def test_event_has_summary_block(self, monkeypatch: pytest.MonkeyPatch) -> None:
         e = self._run(monkeypatch)
         assert "summary" in e and isinstance(e["summary"], dict)
+
+    def test_event_has_injected_pattern_ids_list(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        e = self._run(monkeypatch)
+        assert "injected_pattern_ids" in e
+        assert isinstance(e["injected_pattern_ids"], list)
+
+    def test_session_stopped_injected_pattern_ids_match_prompt_classified(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """session_stopped telemetry carries the same deduped IDs as the outbox row."""
+        log = tmp_path / "events.jsonl"
+        _write_events(log, [
+            _make_event(
+                "prompt_classified",
+                conversation_id="c-telemetry",
+                reason="task done",
+                injected_pattern_ids=["auto-aaa", "auto-bbb"],
+                timestamp="2026-04-14T10:00:00+00:00",
+            ),
+            _make_event(
+                "prompt_classified",
+                conversation_id="c-telemetry",
+                reason="follow-up done",
+                injected_pattern_ids=["auto-bbb", "auto-ccc"],
+                timestamp="2026-04-14T10:01:00+00:00",
+            ),
+        ])
+        events_out: List[Dict] = []
+        monkeypatch.setattr(_mod, "EVENTS_LOG", log)
+        monkeypatch.setattr(_mod, "read_session_context", lambda: {})
+        monkeypatch.setattr(_mod, "log_event", lambda e: events_out.append(e))
+        monkeypatch.setattr(_mod, "read_stdin", lambda: {"conversation_id": "c-telemetry", "status": "completed"})
+        monkeypatch.setattr(_mod, "_write_session_summary", lambda cid, s: None)
+        _stub_stop_emit_and_pattern_sync(monkeypatch)
+        monkeypatch.setattr(sys, "stdout", io.StringIO())
+        _mod.main()
+        stopped = events_out[0]
+        assert stopped["injected_pattern_ids"] == ["auto-aaa", "auto-bbb", "auto-ccc"]
 
     def test_stdout_is_empty_dict(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(_mod, "read_session_context", lambda: {})

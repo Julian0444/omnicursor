@@ -33,6 +33,13 @@ execution:
 local_event_bus:
   kind: append_only_jsonl
   path: "~/.omnicursor/events.jsonl"
+  durable_outbox:
+    path: "~/.omnicursor/outbox.jsonl"
+    schema_version: omnicursor.session_outcome.v1
+    notes: >
+      Each line is a session outcome row. Must include injected_pattern_ids
+      (list of pattern_id strings, possibly empty) aggregated from prompt_classified
+      events so the outbox drainer can emit utilization.scoring.requested.
 
 capabilities:
   - name: cursor.session_outcome

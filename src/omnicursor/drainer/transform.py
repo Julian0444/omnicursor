@@ -16,7 +16,9 @@ def outbox_row_to_events(row: Dict) -> List[Tuple[str, Dict]]:
     Returns [] for non-session-outcome rows (e.g. hook events, socket events).
     Always returns at least one tuple for "session.outcome" on session outcome rows.
     Appends a second tuple for "utilization.scoring.requested" only when
-    injected_pattern_ids is a non-empty list.
+    ``injected_pattern_ids`` is a non-empty list. If the key is missing
+    (legacy rows), it is treated like an empty list — only ``session.outcome``
+    is emitted.
 
     Raises KeyError if any required field is missing — callers must catch
     this and treat the row as a poison line (advance cursor, log warning).

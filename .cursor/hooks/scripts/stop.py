@@ -199,6 +199,20 @@ def main() -> None:
         summary = aggregate_session(conversation_id, status)
         hook_ms = int((time.monotonic() - _start) * 1000)
 
+        events: List[Dict[str, Any]] = []
+        outbox_payload: Optional[Dict[str, Any]] = None
+        if conversation_id:
+            events = _load_events(conversation_id)
+            outbox_payload = _build_outbox_payload(
+                summary, events, conversation_id, correlation_id
+            )
+
+        injected_for_log = (
+            list(outbox_payload.get("injected_pattern_ids") or [])
+            if outbox_payload is not None
+            else []
+        )
+
         log_event({
             "event": "session_stopped",
             "conversation_id": conversation_id,
@@ -207,6 +221,7 @@ def main() -> None:
             "session_outcome": summary["session_outcome"],
             "session_outcome_reason": summary["session_outcome_reason"],
             "hook_duration_ms": hook_ms,
+            "injected_pattern_ids": injected_for_log,
             "summary": summary,
         })
 
@@ -218,16 +233,12 @@ def main() -> None:
         except OSError:
             pass
 
-        if conversation_id:
-            events = _load_events(conversation_id)
+        if conversation_id and outbox_payload is not None:
             write_session_patterns(
                 LEARNED_PATTERNS_FILE,
                 events,
                 summary["files_edited"],
                 summary["session_outcome"],
-            )
-            outbox_payload = _build_outbox_payload(
-                summary, events, conversation_id, correlation_id
             )
             write_session_outcome(outbox_payload)
 
