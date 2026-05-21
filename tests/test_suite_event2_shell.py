@@ -277,6 +277,45 @@ class TestTypedEventSchema:
         e = self._run(monkeypatch, command="x" * 600)
         assert len(e["command"]) == 500
 
+    def test_deny_logs_full_command_and_permission_denied(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        long_cmd = "git commit --no-verify -m '" + "y" * 550 + "'"
+        events: List[Dict] = []
+        monkeypatch.setattr(_mod, "read_session_context", lambda: {"latest_correlation_id": ""})
+        monkeypatch.setattr(_mod, "log_event", lambda e: events.append(e))
+        monkeypatch.setattr(
+            _mod, "read_stdin", lambda: {"command": long_cmd, "conversation_id": "deny-full"}
+        )
+        monkeypatch.setattr(sys, "stdout", io.StringIO())
+        _mod.main()
+        assert len(events) == 1
+        e = events[0]
+        assert e["decision"] == "deny"
+        assert e["command"] == long_cmd
+        assert len(e["command"]) > 500
+        assert e.get("permission_denied") is True
+
+    def test_deny_command_logs_cap_with_truncated_flag(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        long_cmd = "git commit --no-verify -m '" + ("y" * 66_000) + "'"
+        assert len(long_cmd) > 65536
+        events: List[Dict] = []
+        monkeypatch.setattr(_mod, "read_session_context", lambda: {"latest_correlation_id": ""})
+        monkeypatch.setattr(_mod, "log_event", lambda e: events.append(e))
+        monkeypatch.setattr(
+            _mod, "read_stdin", lambda: {"command": long_cmd, "conversation_id": "deny-cap"}
+        )
+        monkeypatch.setattr(sys, "stdout", io.StringIO())
+        _mod.main()
+        assert len(events) == 1
+        e = events[0]
+        assert e["decision"] == "deny"
+        assert len(e["command"]) == 65536
+        assert e.get("permission_denied") is True
+        assert e.get("command_truncated") is True
+
     def test_deny_decision_logged(self, monkeypatch: pytest.MonkeyPatch) -> None:
         assert self._run(monkeypatch, command="rm -rf /")["decision"] == "deny"
 

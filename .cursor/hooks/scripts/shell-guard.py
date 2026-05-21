@@ -11,6 +11,10 @@ from __future__ import annotations
 import sys
 import time
 from pathlib import Path
+from typing import Any
+
+# Upper bound for denied-command audit logs (avoid multi-megabyte JSONL rows).
+_MAX_DENIED_COMMAND_LOG_CHARS = 65536
 
 _hooks = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_hooks / "lib"))
@@ -62,15 +66,30 @@ def main() -> None:
 
         hook_ms = int((time.monotonic() - _start) * 1000)
 
-        log_event({
+        cmd_truncated = False
+        if decision == "deny":
+            if len(command) > _MAX_DENIED_COMMAND_LOG_CHARS:
+                logged_command = command[:_MAX_DENIED_COMMAND_LOG_CHARS]
+                cmd_truncated = True
+            else:
+                logged_command = command
+        else:
+            logged_command = command[:500]
+
+        payload: dict[str, Any] = {
             "event": "shell_guard",
             "conversation_id": conversation_id,
             "correlation_id": correlation_id,
-            "command": command[:500],
+            "command": logged_command,
             "decision": decision,
             "reason": reason,
             "hook_duration_ms": hook_ms,
-        })
+        }
+        if decision == "deny":
+            payload["permission_denied"] = True
+        if cmd_truncated:
+            payload["command_truncated"] = True
+        log_event(payload)
 
         write_stdout(response)
     except Exception:

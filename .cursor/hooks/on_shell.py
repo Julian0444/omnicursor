@@ -17,6 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _common import log_event, read_stdin, write_stdout
 
+# Keep in sync with `.cursor/hooks/scripts/shell-guard.py`
+_MAX_DENIED_COMMAND_LOG_CHARS = 65536
+
 
 # ---------------------------------------------------------------------------
 # Patterns — compiled at module load
@@ -109,15 +112,28 @@ def main() -> None:
             decision = "allow"
             reason = ""
 
-        log_event(
-            {
-                "event": "shell_guard",
-                "command": command[:500],
-                "decision": decision,
-                "reason": reason,
-                "conversation_id": conversation_id,
-            }
-        )
+        cmd_truncated = False
+        if decision == "deny":
+            if len(command) > _MAX_DENIED_COMMAND_LOG_CHARS:
+                logged_command = command[:_MAX_DENIED_COMMAND_LOG_CHARS]
+                cmd_truncated = True
+            else:
+                logged_command = command
+        else:
+            logged_command = command[:500]
+
+        payload: Dict[str, Any] = {
+            "event": "shell_guard",
+            "command": logged_command,
+            "decision": decision,
+            "reason": reason,
+            "conversation_id": conversation_id,
+        }
+        if decision == "deny":
+            payload["permission_denied"] = True
+        if cmd_truncated:
+            payload["command_truncated"] = True
+        log_event(payload)
 
         write_stdout(response)
     except Exception:
