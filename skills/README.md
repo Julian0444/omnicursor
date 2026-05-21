@@ -7,4 +7,4 @@ Each skill is a directory containing a `SKILL.md` with YAML frontmatter
 (`name:`, `description:`) followed by the skill instructions. Cursor
 discovers them natively in its skill picker.
 
-See `cursor-plugin.json` for the full plugin surface map.
+See `.cursor-plugin/plugin.json` (official manifest) and `cursor-plugin.json` (install/surfaces companion).
