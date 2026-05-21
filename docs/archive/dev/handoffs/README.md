@@ -1,3 +1,5 @@
 # Session handoff files
 
 Optional folder for **per-session** handoff manifests produced when following the **`onex-handoff`** skill and **`15-handoff.mdc`** rule. Use dated names (for example `2026-04-07-auth-fix.md`) so they do not replace `docs/archive/dev/HANDOFF.md`.
+
+For **repo-level onboarding** (what to read first, setup, constraints), use the active guide [`docs/HANDOFF.md`](../../HANDOFF.md).

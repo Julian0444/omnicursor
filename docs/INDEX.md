@@ -6,6 +6,7 @@ Quick map of **active** docs. Historical material is under [`archive/`](./archiv
 
 | Doc | Purpose |
 |-----|---------|
+| [HANDOFF.md](./HANDOFF.md) | **Project pickup guide** — read order, repo map, constraints, common tasks |
 | [README.md](../README.md) | Repo overview, layout, hooks, skills |
 | [CLAUDE.md](../CLAUDE.md) | Commands, architecture, conventions (primary contributor reference) |
 | [QUICKSTART.md](./QUICKSTART.md) | Plugin install, hooks, skills, Linear MCP |

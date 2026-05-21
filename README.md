@@ -97,6 +97,7 @@ ruff check src/ tests/ .cursor/hooks/
 
 ## Documentation
 
+- [`docs/HANDOFF.md`](./docs/HANDOFF.md) — Project pickup guide (read first when continuing work)
 - [`CLAUDE.md`](./CLAUDE.md) — Commands, architecture, conventions
 - [`docs/INDEX.md`](./docs/INDEX.md) — Map of all active docs
 - [`docs/QUICKSTART.md`](./docs/QUICKSTART.md) — Setup, hooks, skills
