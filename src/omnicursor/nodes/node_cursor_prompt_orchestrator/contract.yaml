@@ -29,7 +29,7 @@ description: >
 
 cursor_native:
   hook_event: beforeSubmitPrompt
-  hooks_json_command: "python3 .cursor/hooks/scripts/user-prompt-submit.py"
+  hooks_json_command: "python3 \"${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/user-prompt-submit.py\""
   implementation: .cursor/hooks/scripts/user-prompt-submit.py
   blocking: false
 

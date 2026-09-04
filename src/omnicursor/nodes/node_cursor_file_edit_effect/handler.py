@@ -13,7 +13,7 @@ CONTRACT_NAME = "node_cursor_file_edit_effect"
 def hook_binding() -> dict[str, str | bool]:
     return {
         "hook_event": "afterFileEdit",
-        "hooks_json_command": "python3 .cursor/hooks/scripts/post-edit.py",
+        "hooks_json_command": 'python3 "${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/post-edit.py"',
         "implementation": ".cursor/hooks/scripts/post-edit.py",
         "blocking": False,
     }

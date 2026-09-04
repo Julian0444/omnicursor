@@ -15,7 +15,7 @@ CONTRACT_NAME = "node_cursor_session_end_effect"
 def hook_binding() -> dict[str, str | bool]:
     return {
         "hook_event": "sessionEnd",
-        "hooks_json_command": "python3 .cursor/hooks/scripts/session-end.py",
+        "hooks_json_command": 'python3 "${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/session-end.py"',
         "implementation": ".cursor/hooks/scripts/session-end.py",
         "blocking": False,
     }

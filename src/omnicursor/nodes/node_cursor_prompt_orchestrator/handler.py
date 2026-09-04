@@ -14,7 +14,7 @@ CONTRACT_NAME = "node_cursor_prompt_orchestrator"
 def hook_binding() -> dict[str, str | bool]:
     return {
         "hook_event": "beforeSubmitPrompt",
-        "hooks_json_command": "python3 .cursor/hooks/scripts/user-prompt-submit.py",
+        "hooks_json_command": 'python3 "${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/user-prompt-submit.py"',
         "implementation": ".cursor/hooks/scripts/user-prompt-submit.py",
         "blocking": False,
     }

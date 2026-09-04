@@ -13,7 +13,7 @@ CONTRACT_NAME = "node_cursor_session_outcome_orchestrator"
 def hook_binding() -> dict[str, str | bool]:
     return {
         "hook_event": "stop",
-        "hooks_json_command": "python3 .cursor/hooks/scripts/stop.py",
+        "hooks_json_command": 'python3 "${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/stop.py"',
         "implementation": ".cursor/hooks/scripts/stop.py",
         "blocking": False,
     }

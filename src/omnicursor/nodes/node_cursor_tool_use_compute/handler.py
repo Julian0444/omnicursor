@@ -16,7 +16,7 @@ CONTRACT_NAME = "node_cursor_tool_use_compute"
 def hook_binding() -> dict[str, str | bool]:
     return {
         "hook_event": "postToolUse",
-        "hooks_json_command": "python3 .cursor/hooks/scripts/post-tool-use.py",
+        "hooks_json_command": 'python3 "${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/post-tool-use.py"',
         "implementation": ".cursor/hooks/scripts/post-tool-use.py",
         "blocking": False,
     }

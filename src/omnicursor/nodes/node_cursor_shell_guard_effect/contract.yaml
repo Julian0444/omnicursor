@@ -23,7 +23,7 @@ description: >
 
 cursor_native:
   hook_event: beforeShellExecution
-  hooks_json_command: "python3 .cursor/hooks/scripts/shell-guard.py"
+  hooks_json_command: "python3 \"${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/shell-guard.py\""
   implementation: .cursor/hooks/scripts/shell-guard.py
   blocking: true
 

@@ -27,7 +27,7 @@ description: >
 
 cursor_native:
   hook_event: postToolUse
-  hooks_json_command: "python3 .cursor/hooks/scripts/post-tool-use.py"
+  hooks_json_command: "python3 \"${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/post-tool-use.py\""
   implementation: .cursor/hooks/scripts/post-tool-use.py
   blocking: false
 

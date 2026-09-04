@@ -28,7 +28,7 @@ description: >
 
 cursor_native:
   hook_event: sessionStart
-  hooks_json_command: "python3 .cursor/hooks/scripts/session-start.py"
+  hooks_json_command: "python3 \"${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/session-start.py\""
   implementation: .cursor/hooks/scripts/session-start.py
   blocking: false
 

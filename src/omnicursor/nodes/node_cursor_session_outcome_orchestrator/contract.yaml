@@ -23,7 +23,7 @@ description: >
 
 cursor_native:
   hook_event: stop
-  hooks_json_command: "python3 .cursor/hooks/scripts/stop.py"
+  hooks_json_command: "python3 \"${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/stop.py\""
   implementation: .cursor/hooks/scripts/stop.py
   blocking: false
 

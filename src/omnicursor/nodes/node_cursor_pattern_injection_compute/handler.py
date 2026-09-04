@@ -24,7 +24,7 @@ CONTRACT_NAME = "node_cursor_pattern_injection_compute"
 def hook_binding() -> dict[str, str | bool]:
     return {
         "hook_event": "sessionStart",
-        "hooks_json_command": "python3 .cursor/hooks/scripts/session-start.py",
+        "hooks_json_command": 'python3 "${CLAUDE_PLUGIN_ROOT}/.cursor/hooks/scripts/session-start.py"',
         "implementation": ".cursor/hooks/scripts/session-start.py",
         "blocking": False,
     }
